@@ -16,7 +16,7 @@ final class SupplementaryView: UICollectionReusableView {
         
         addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = UIFont(name: "SFProDisplay-Bold", size: 19)
+        titleLabel.font = .sfProDisplayBold19
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 12),

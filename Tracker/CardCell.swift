@@ -12,16 +12,14 @@ final class CardCell: UICollectionViewCell {
     
     let colorContainer: UIView = {
         let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
         view.layer.cornerRadius = 16
         view.clipsToBounds = true
         return view
     }()
     
-    private let descriptionLabel: UILabel = {
+    private lazy var descriptionLabel: UILabel = {
         let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "SFProDisplay-Medium", size: 12)
+        label.font = .sfProDisplayMedium12
         label.textColor = .ypWhite
         label.numberOfLines = 2
         return label
@@ -29,7 +27,6 @@ final class CardCell: UICollectionViewCell {
     
     private let emojiBackgroundView: UIView = {
         let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = UIColor.ypWhite.withAlphaComponent(0.2)
         view.layer.cornerRadius = 24 / 2
         view.clipsToBounds = true
@@ -38,7 +35,6 @@ final class CardCell: UICollectionViewCell {
     
     private let emojiLabel: UILabel = {
         let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 16)
         label.textAlignment = .center
         return label
@@ -46,8 +42,7 @@ final class CardCell: UICollectionViewCell {
     
     private let dayLabel: UILabel = {
         let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "SFProDisplay-Medium", size: 12)
+        label.font = .sfProDisplayMedium12
         label.textColor = .ypBlack
         return label
     }()
@@ -56,7 +51,6 @@ final class CardCell: UICollectionViewCell {
     
     private lazy var plusButton: UIButton = {
         let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.titleLabel?.font = .systemFont(ofSize: 20)
         button.tintColor = .ypWhite
         button.layer.cornerRadius = plusButtonSize / 2
@@ -67,10 +61,10 @@ final class CardCell: UICollectionViewCell {
     private var isCompleted: Bool = false
     private var daysCount: Int = 0
     var onToggleComplete: ((IndexPath, Bool) -> Void)?
-    private var trackerId: UUID!
+    private var trackerId: UUID?
     private var isCompletedToday: Bool = false
     private var daysCountTotal: Int = 0
-    var indexPath: IndexPath!
+    var indexPath: IndexPath?
     
     private let pinImageView: UIImageView = {
         let img = UIImageView(image: UIImage(named: "pin"))
@@ -84,10 +78,10 @@ final class CardCell: UICollectionViewCell {
             pinImageView.isHidden = !isPinned
         }
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupSubviews()
+        setupUI()
         setupConstraints()
     }
     
@@ -104,6 +98,19 @@ final class CardCell: UICollectionViewCell {
         contentView.backgroundColor = .clear
         contentView.addSubview(dayLabel)
         contentView.addSubview(plusButton)
+        plusButton.addTarget(self, action: #selector(didTapPlusButton), for: .touchUpInside)
+    }
+
+    private func setupUI() {
+        [colorContainer, pinImageView, emojiBackgroundView, emojiLabel, descriptionLabel, dayLabel, plusButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
+
+        contentView.addSubview(colorContainer)
+        colorContainer.addSubviews(pinImageView, emojiBackgroundView, descriptionLabel)
+        emojiBackgroundView.addSubviews(emojiLabel)
+        contentView.addSubviews(dayLabel, plusButton)
+        
         plusButton.addTarget(self, action: #selector(didTapPlusButton), for: .touchUpInside)
     }
     
@@ -153,7 +160,7 @@ final class CardCell: UICollectionViewCell {
         self.daysCountTotal = allRecordsForCard.count
         
         self.isCompletedToday = completedRecords.contains { rec in
-            return rec.trackerId == card.id && Calendar.current.isDate(rec.date, inSameDayAs: currentDate)
+            rec.trackerId == card.id && Calendar.current.isDate(rec.date, inSameDayAs: currentDate)
         }
         let suffix = dayText(for: daysCountTotal)
         dayLabel.text = "\(daysCountTotal) \(suffix)"
@@ -173,6 +180,7 @@ final class CardCell: UICollectionViewCell {
     }
     
     @objc private func didTapPlusButton() {
+        guard let indexPath = self.indexPath else { return }
         onToggleComplete?(indexPath, !isCompletedToday)
     }
     
@@ -185,6 +193,15 @@ final class CardCell: UICollectionViewCell {
         } else {
             plusButton.setTitle("+", for: .normal)
             plusButton.backgroundColor = colorContainer.backgroundColor
+        }
+    }
+}
+
+extension UIView {
+    func addSubviews(_ views: UIView...) {
+        views.forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            addSubview($0)
         }
     }
 }

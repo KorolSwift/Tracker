@@ -8,7 +8,10 @@
 import UIKit
 
 
-class TrackerViewController: UIViewController {
+final class TrackerViewController: UIViewController {
+    private let encoder = JSONEncoder()
+    private let decoder = JSONDecoder()
+    
     private let searchController = UISearchController(searchResultsController: nil)
     private var sections: [TrackerSection] = []
     private var allSections: [TrackerSection] = []
@@ -45,9 +48,10 @@ class TrackerViewController: UIViewController {
         appearance.backgroundColor = .ypWhite
         appearance.shadowColor = .clear
         appearance.largeTitleTextAttributes = [
-            .font: UIFont(name: "SFProDisplay-Bold", size: 34)!,
+            .font: UIFont.sfProDisplayBold34 ?? UIFont.systemFont(ofSize: 34, weight: .bold),
             .foregroundColor: UIColor.ypBlack
         ]
+        
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         
@@ -56,7 +60,7 @@ class TrackerViewController: UIViewController {
         navigationItem.searchController = searchController
         searchController.searchBar.placeholder = "Поиск"
         let searchTextField = searchController.searchBar.searchTextField
-        searchTextField.font = UIFont(name: "SFProDisplay-Regular", size: 17)
+        searchTextField.font = .sfProDisplayRegular17
         
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
@@ -107,11 +111,11 @@ class TrackerViewController: UIViewController {
     @objc private func didTapAddSection() {
         let trackerCreationViewController = TrackerCreationViewController()
         trackerCreationViewController.onHabitButtonTap = { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             trackerCreationViewController.dismiss(animated: true) {
                 let cardCreationViewController = CardCreationViewController(mode: .habit)
                 cardCreationViewController.onSave = { [weak self] card, sectionTitle in
-                    guard let self = self else { return }
+                    guard let self else { return }
                     self.addCard(toSectionWithTitle: sectionTitle, card: card)
                 }
                 cardCreationViewController.modalPresentationStyle = .pageSheet
@@ -119,11 +123,11 @@ class TrackerViewController: UIViewController {
             }
         }
         trackerCreationViewController.onIrregularEventTap = { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             trackerCreationViewController.dismiss(animated: true) {
                 let cardCreationViewController = CardCreationViewController(mode: .irregularEvent)
                 cardCreationViewController.onSave = { [weak self] card, sectionTitle in
-                    guard let self = self else { return }
+                    guard let self else { return }
                     self.addCard(toSectionWithTitle: sectionTitle, card: card)
                 }
                 cardCreationViewController.modalPresentationStyle = .pageSheet
@@ -142,7 +146,7 @@ class TrackerViewController: UIViewController {
         let label = UILabel()
         label.text = "Что будем отслеживать?"
         label.textColor = .ypBlack
-        label.font = UIFont(name: "SFProDisplay-Medium", size: 12)
+        label.font = .sfProDisplayMedium12
         label.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(label)
         
@@ -166,13 +170,13 @@ class TrackerViewController: UIViewController {
             }
         }
     }
-    
+
     private func updateEmptyState() {
-        if sections.isEmpty {
+        guard !sections.isEmpty else {
             showError()
-        } else {
-            removeError()
+            return
         }
+        removeError()
     }
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
@@ -247,14 +251,14 @@ class TrackerViewController: UIViewController {
     @objc private func onHabitButtonTap() {
         let creationViewController = CardCreationViewController(mode: .habit)
         creationViewController.onSave = { [weak self] card, sectionTitle in
-            guard let self = self else { return }
+            guard let self else { return }
             self.addCard(toSectionWithTitle: sectionTitle, card: card)
         }
         let nav = UINavigationController(rootViewController: creationViewController)
         nav.modalPresentationStyle = .pageSheet
         present(nav, animated: true)
     }
-
+    
     private func pinTracker(at indexPath: IndexPath) {
         let cardToPin = sections[indexPath.section].cards[indexPath.item]
         if let oldSectionIndex = allSections.firstIndex(where: { $0.title == sections[indexPath.section].title }) {
@@ -297,14 +301,20 @@ class TrackerViewController: UIViewController {
     private func editTracker(indexPath: IndexPath) {
         let oldCard = sections[indexPath.section].cards[indexPath.item]
         let editingMode: CardCreationViewController.Mode = oldCard.selectedDays.isEmpty
-        ? .irregularEvent : .habit
+            ? .irregularEvent : .habit
+        let emojiIndex = IndexPath(item: CardCreationViewController.emojies.firstIndex(of: oldCard.emoji) ?? 0, section: 0)
+        let colorIndex = IndexPath(item: oldCard.colorIndex, section: 0)
+
+        let cardCreationViewController = CardCreationViewController(
+            mode: editingMode,
+            initialSelectedEmojiIndex: emojiIndex,
+            initialSelectedColorIndex: colorIndex,
+            initialDescription: oldCard.description,
+            initialSelectedDays: oldCard.selectedDays
+        )
         
-        let cardCreationViewController = CardCreationViewController(mode: editingMode)
-        cardCreationViewController.initialDescription = oldCard.description
-        cardCreationViewController.initialSelectedDays = oldCard.selectedDays
-        
-        cardCreationViewController.onSave = { [weak self] updatedCard, updatedTitle in
-            guard let self = self else { return }
+    cardCreationViewController.onSave = { [weak self] (updatedCard: Card, updatedTitle: String) in
+        guard let self else { return }
             var newCard = updatedCard
             newCard.isPinned = oldCard.isPinned
             
@@ -323,7 +333,7 @@ class TrackerViewController: UIViewController {
             self.collectionView.reloadItems(at: [indexPath])
             self.saveTrackers()
         }
-        cardCreationViewController.modalPresentationStyle = .pageSheet
+        cardCreationViewController.modalPresentationStyle = UIModalPresentationStyle.pageSheet
         present(cardCreationViewController, animated: true)
     }
     
@@ -355,7 +365,7 @@ class TrackerViewController: UIViewController {
             preferredStyle: .actionSheet
         )
         let delete = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self else { return }
             self.deleteTracker(indexPath: indexPath)
         }
         let cancel = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
@@ -370,11 +380,11 @@ class TrackerViewController: UIViewController {
     }
 
     private func saveTrackers() {
-        if let data = try? JSONEncoder().encode(allSections) {
+        if let data = try? encoder.encode(allSections) {
             UserDefaults.standard.set(data, forKey: trackersKey)
         }
         let array = Array(completedRecords)
-        if let recordsData = try? JSONEncoder().encode(array) {
+        if let recordsData = try? encoder.encode(array) {
             UserDefaults.standard.set(recordsData, forKey: recordsKey)
         }
     }
@@ -383,13 +393,13 @@ class TrackerViewController: UIViewController {
         let defaults = UserDefaults.standard
         
         if let data = defaults.data(forKey: trackersKey),
-           let decodedSections = try? JSONDecoder().decode([TrackerSection].self, from: data) {
+           let decodedSections = try? decoder.decode([TrackerSection].self, from: data) {
             allSections = decodedSections
         } else {
             allSections = []
         }
         if let recordedData = defaults.data(forKey: recordsKey),
-           let decodedArray = try? JSONDecoder().decode([TrackerRecord].self, from: recordedData) {
+           let decodedArray = try? decoder.decode([TrackerRecord].self, from: recordedData) {
             completedRecords = Set(decodedArray)
         } else {
             completedRecords = []
@@ -399,15 +409,17 @@ class TrackerViewController: UIViewController {
 
 extension TrackerViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return sections.count
+        sections.count
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return sections[section].cards.count
+        sections[section].cards.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! CardCell
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? CardCell else {
+            return UICollectionViewCell()
+        }
         let card = sections[indexPath.section].cards[indexPath.item]
         cell.configure(
             with: card,
@@ -416,7 +428,7 @@ extension TrackerViewController: UICollectionViewDataSource {
         )
         cell.indexPath = indexPath
         cell.onToggleComplete = { [weak self] cellIndexPath, newIsCompleted in
-            guard let self = self else { return }
+            guard let self else { return }
             let pickedDay = self.currentDate.stripTimeComponent()
             let today     = Date().stripTimeComponent()
             if pickedDay > today {
@@ -446,11 +458,13 @@ extension TrackerViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let view = collectionView.dequeueReusableSupplementaryView(
+        guard let view = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
             withReuseIdentifier: "header",
             for: indexPath
-        ) as! SupplementaryView
+        ) as? SupplementaryView else {
+            return UICollectionReusableView()
+        }
         view.titleLabel.text = sections[indexPath.section].title
         return view
     }
@@ -465,7 +479,7 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: collectionView.bounds.width, height: 46)
+        CGSize(width: collectionView.bounds.width, height: 46)
     }
 }
 
@@ -488,7 +502,7 @@ extension TrackerViewController: UICollectionViewDelegate {
                 title: "Удалить",
                 attributes: .destructive
             ) { [weak self] _ in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.showDeleteConfirmation(for: indexPath)
             }
             return UIMenu(title: "", children: [pinAction, editAction, deleteAction])

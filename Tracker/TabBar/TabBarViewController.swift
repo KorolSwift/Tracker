@@ -11,7 +11,7 @@ import UIKit
 final class TabBarViewController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        let tabBarFont = UIFont(name: "SFProDisplay-Medium", size: 10)!
+        let tabBarFont = UIFont.sfProDisplayMedium10 ?? UIFont.systemFont(ofSize: 10, weight: .medium)
         
         UITabBarItem.appearance().setTitleTextAttributes([
             .font: tabBarFont,

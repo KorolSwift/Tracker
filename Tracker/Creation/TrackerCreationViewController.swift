@@ -11,8 +11,8 @@ import UIKit
 final class TrackerCreationViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Создание трекера"
-        label.font = UIFont(name: "SFProDisplay-Medium", size: 16)
+        label.text = Constants.CardCreation.trackerCreationTitle
+        label.font = .sfProDisplayMedium16
         label.textAlignment = .center
         label.textColor = .ypBlack
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -21,9 +21,9 @@ final class TrackerCreationViewController: UIViewController {
     
     private let habitButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Привычка", for: .normal)
+        button.setTitle(Constants.CardCreation.habitButtonTitle, for: .normal)
         button.backgroundColor = .ypBlack
-        button.titleLabel?.font = UIFont(name: "SFProDisplay-Medium", size: 16)
+        button.titleLabel?.font = .sfProDisplayMedium16
         button.setTitleColor(.ypWhite, for: .normal)
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
@@ -34,14 +34,13 @@ final class TrackerCreationViewController: UIViewController {
     
     private let irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Нерегулярное событие", for: .normal)
+        button.setTitle(Constants.CardCreation.irregularEventButtonTitle, for: .normal)
         button.backgroundColor = .ypBlack
-        button.titleLabel?.font = UIFont(name: "SFProDisplay-Medium", size: 16)
+        button.titleLabel?.font = .sfProDisplayMedium16
         button.setTitleColor(.ypWhite, for: .normal)
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.addTarget(self, action: #selector(irregularEventButtonTapped), for: .touchUpInside)
-        
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()

@@ -9,11 +9,13 @@ import UIKit
 
 
 final class ScheduleViewController: UIViewController {
+    
+
     private let scheduleTitle: UILabel = {
         let title = UILabel()
         title.textColor = .ypBlack
-        title.font = UIFont(name: "SFProDisplay-Medium", size: 16)
-        title.text = "Расписание"
+        title.font = .sfProDisplayMedium16
+        title.text = Constants.Schedule.scheduleTitle
         title.translatesAutoresizingMaskIntoConstraints = false
         return title
     }()
@@ -49,7 +51,7 @@ final class ScheduleViewController: UIViewController {
     private let doneButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Готово", for: .normal)
-        button.titleLabel?.font = UIFont(name: "SFProDisplay-Medium", size: 16)
+        button.titleLabel?.font = .sfProDisplayMedium16
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = UIColor.ypBlack
         button.layer.cornerRadius = 12
@@ -119,7 +121,7 @@ final class ScheduleViewController: UIViewController {
 
 extension ScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return daysOfWeek.count
+        daysOfWeek.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

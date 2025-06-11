@@ -8,7 +8,7 @@
 import UIKit
 
 
-class StaticticViewController: UIViewController {
+final class StaticticViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
     }

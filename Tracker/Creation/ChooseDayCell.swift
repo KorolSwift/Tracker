@@ -13,7 +13,7 @@ final class ChooseDayCell: UITableViewCell {
     
     private let dayLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont(name: "SFProDisplay-Regular", size: 17)
+        label.font = .sfProDisplayRegular17
         label.textColor = .ypBlack
         label.translatesAutoresizingMaskIntoConstraints = false
         return label

@@ -17,7 +17,7 @@ struct TrackerRecord: Hashable, Codable {
     }
     
     static func ==(lhs: TrackerRecord, rhs: TrackerRecord) -> Bool {
-        return lhs.trackerId == rhs.trackerId && Calendar.current.isDate(lhs.date, inSameDayAs: rhs.date)
+        lhs.trackerId == rhs.trackerId && Calendar.current.isDate(lhs.date, inSameDayAs: rhs.date)
     }
 }
 
@@ -25,6 +25,6 @@ extension Date {
     func stripTimeComponent() -> Date {
         let calendar = Calendar.current
         let comps = calendar.dateComponents([.year, .month, .day], from: self)
-        return calendar.date(from: comps)!
+        return calendar.date(from: comps) ?? self
     }
 }
