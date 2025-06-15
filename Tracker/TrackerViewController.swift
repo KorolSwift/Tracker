@@ -170,7 +170,7 @@ final class TrackerViewController: UIViewController {
             }
         }
     }
-
+    
     private func updateEmptyState() {
         guard !sections.isEmpty else {
             showError()
@@ -301,10 +301,10 @@ final class TrackerViewController: UIViewController {
     private func editTracker(indexPath: IndexPath) {
         let oldCard = sections[indexPath.section].cards[indexPath.item]
         let editingMode: CardCreationViewController.Mode = oldCard.selectedDays.isEmpty
-            ? .irregularEvent : .habit
+        ? .irregularEvent : .habit
         let emojiIndex = IndexPath(item: CardCreationViewController.emojies.firstIndex(of: oldCard.emoji) ?? 0, section: 0)
         let colorIndex = IndexPath(item: oldCard.colorIndex, section: 0)
-
+        
         let cardCreationViewController = CardCreationViewController(
             mode: editingMode,
             initialSelectedEmojiIndex: emojiIndex,
@@ -313,8 +313,8 @@ final class TrackerViewController: UIViewController {
             initialSelectedDays: oldCard.selectedDays
         )
         
-    cardCreationViewController.onSave = { [weak self] (updatedCard: Card, updatedTitle: String) in
-        guard let self else { return }
+        cardCreationViewController.onSave = { [weak self] (updatedCard: Card, updatedTitle: String) in
+            guard let self else { return }
             var newCard = updatedCard
             newCard.isPinned = oldCard.isPinned
             
@@ -378,7 +378,7 @@ final class TrackerViewController: UIViewController {
         }
         present(alert, animated: true, completion: nil)
     }
-
+    
     private func saveTrackers() {
         if let data = try? encoder.encode(allSections) {
             UserDefaults.standard.set(data, forKey: trackersKey)
@@ -430,7 +430,7 @@ extension TrackerViewController: UICollectionViewDataSource {
         cell.onToggleComplete = { [weak self] cellIndexPath, newIsCompleted in
             guard let self else { return }
             let pickedDay = self.currentDate.stripTimeComponent()
-            let today     = Date().stripTimeComponent()
+            let today = Date().stripTimeComponent()
             if pickedDay > today {
                 let alert = UIAlertController(
                     title: "Ошибка",

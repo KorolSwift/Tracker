@@ -78,7 +78,7 @@ final class CardCell: UICollectionViewCell {
             pinImageView.isHidden = !isPinned
         }
     }
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -100,12 +100,12 @@ final class CardCell: UICollectionViewCell {
         contentView.addSubview(plusButton)
         plusButton.addTarget(self, action: #selector(didTapPlusButton), for: .touchUpInside)
     }
-
+    
     private func setupUI() {
         [colorContainer, pinImageView, emojiBackgroundView, emojiLabel, descriptionLabel, dayLabel, plusButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
-
+        
         contentView.addSubview(colorContainer)
         colorContainer.addSubviews(pinImageView, emojiBackgroundView, descriptionLabel)
         emojiBackgroundView.addSubviews(emojiLabel)

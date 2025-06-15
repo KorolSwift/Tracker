@@ -10,11 +10,11 @@ import UIKit
 
 final class EmojiCell: UICollectionViewCell {
     private let emojiLabel: UILabel = {
-        let l = UILabel()
-        l.font = .systemFont(ofSize: 32)
-        l.textAlignment = .center
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 32)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
 
     override init(frame: CGRect) {
