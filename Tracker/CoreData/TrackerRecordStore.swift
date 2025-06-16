@@ -50,4 +50,34 @@ final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
         }
         delegate?.didUpdateRecords(records)
     }
+    
+    func add(_ record: TrackerRecord) {
+        let entity = TrackerRecordCoreData(context: context)
+        entity.trackerId = record.trackerId
+        entity.date = record.date
+        try? context.save()
+    }
+    
+    func delete(_ record: TrackerRecord) {
+        let request: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "trackerId == %@ AND date == %@",
+            record.trackerId as CVarArg,
+            record.date as NSDate
+        )
+        if let object = try? context.fetch(request).first {
+            context.delete(object)
+            try? context.save()
+        }
+    }
+    
+    func fetchAllRecords() -> [TrackerRecord] {
+        guard let entities = fetchedResultsController.fetchedObjects else { return [] }
+        return entities.compactMap { entity in
+            guard let id = entity.trackerId,
+                  let date = entity.date
+            else { return nil }
+            return TrackerRecord(trackerId: id, date: date)
+        }
+    }
 }

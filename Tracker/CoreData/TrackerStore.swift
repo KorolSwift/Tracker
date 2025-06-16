@@ -31,6 +31,7 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
         super.init()
         _ = fetchedResultsController
     }
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         delegate?.didUpdate()
     }

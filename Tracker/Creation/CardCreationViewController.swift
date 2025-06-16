@@ -14,6 +14,7 @@ final class CardCreationViewController: UIViewController {
         case irregularEvent
     }
     private let mode: Mode
+    private let existingCardId: UUID?
     
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -139,6 +140,7 @@ final class CardCreationViewController: UIViewController {
         return button
     }()
     
+    private let cardStore: CardStore
     var onSave: ((Card, String) -> Void)?
     private var selectedEmoji: String = ""
     private var selectedColor: UIColor = .ypBlue
@@ -206,16 +208,20 @@ final class CardCreationViewController: UIViewController {
     
     init(
         mode: Mode,
+        existingCardId: UUID? = nil,
         initialSelectedEmojiIndex: IndexPath? = nil,
         initialSelectedColorIndex: IndexPath? = nil,
         initialDescription: String? = nil,
-        initialSelectedDays: [String]? = nil
+        initialSelectedDays: [String]? = nil,
+        cardStore: CardStore
     ) {
         self.mode = mode
+        self.existingCardId = existingCardId
         self.initialEmojiIndex = initialSelectedEmojiIndex
         self.initialColorIndex = initialSelectedColorIndex
         self.initialDescription = initialDescription
         self.initialSelectedDays = initialSelectedDays
+        self.cardStore = cardStore
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -415,13 +421,14 @@ final class CardCreationViewController: UIViewController {
     @objc private func createButtonTapped() {
         let index = selectedColorIndex?.item ?? 0
         let card = Card(
-            id: UUID(),
+            id: existingCardId ?? UUID(),
             emoji: selectedEmoji,
             description: descriptionTextView.text ?? "",
             colorIndex: index,
             selectedDays: currentSelectedDays,
             originalSectionTitle: categoryButton.currentTitle ?? ""
         )
+        cardStore.save(card)
         onSave?(card, categoryButton.currentTitle ?? "")
         dismiss(animated: true)
     }
