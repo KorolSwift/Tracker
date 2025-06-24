@@ -10,13 +10,15 @@ import UIKit
 
 final class ColorCell: UICollectionViewCell {
     private let colorView: UIView = {
-        let v = UIView()
-        v.translatesAutoresizingMaskIntoConstraints = false
-        v.layer.cornerRadius = 8
-        v.layer.masksToBounds = true
-        return v
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 8
+        view.layer.masksToBounds = true
+        return view
     }()
-
+    
+    private var storedColor: UIColor = .clear
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.addSubview(colorView)
@@ -29,19 +31,25 @@ final class ColorCell: UICollectionViewCell {
         contentView.layer.cornerRadius = 10
         contentView.layer.masksToBounds = true
     }
-
+    
     required init?(coder: NSCoder) { fatalError() }
-
+    
     override var isSelected: Bool {
         didSet {
-            contentView.layer.borderWidth = isSelected ? 3 : 0
-            contentView.layer.borderColor = isSelected
-                ? colorView.backgroundColor?.withAlphaComponent(0.3).cgColor
-                : nil
+            updateBorder()
         }
     }
-
+    
+    private func updateBorder() {
+        contentView.layer.borderWidth = isSelected ? 3 : 0
+        contentView.layer.borderColor = isSelected
+        ? storedColor.withAlphaComponent(0.3).cgColor
+        : UIColor.clear.cgColor
+    }
+    
     func configure(with color: UIColor) {
+        storedColor = color
         colorView.backgroundColor = color
+        updateBorder()
     }
 }

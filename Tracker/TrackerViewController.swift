@@ -6,12 +6,10 @@
 //
 
 import UIKit
+import CoreData
 
 
 final class TrackerViewController: UIViewController {
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
-    
     private let searchController = UISearchController(searchResultsController: nil)
     private var sections: [TrackerSection] = []
     private var allSections: [TrackerSection] = []
@@ -33,10 +31,29 @@ final class TrackerViewController: UIViewController {
     private let pinnedSectionTitle = "Закрепленные"
     private let trackersKey = "trackersData"
     private let recordsKey = "trackerRecordsData"
+
+    private lazy var cardStore: CardStore = {
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            return CardStore(context: appDelegate.persistentContainer.viewContext)
+        } else {
+            assertionFailure("AppDelegate не найден или не того типа")
+            return CardStore(context: NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType))
+        }
+    }()
+
+    private lazy var trackerRecordStore: TrackerRecordStore = {
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            return TrackerRecordStore(context: appDelegate.persistentContainer.viewContext)
+        } else {
+            assertionFailure("AppDelegate не найден или не того типа")
+            return TrackerRecordStore(context: NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType))
+        }
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadTrackers()
+        loadCardsFromCoreData()
+        completedRecords = Set(trackerRecordStore.fetchAllRecords())
         view.backgroundColor = .ypWhite
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .always
@@ -113,7 +130,7 @@ final class TrackerViewController: UIViewController {
         trackerCreationViewController.onHabitButtonTap = { [weak self] in
             guard let self else { return }
             trackerCreationViewController.dismiss(animated: true) {
-                let cardCreationViewController = CardCreationViewController(mode: .habit)
+                let cardCreationViewController = CardCreationViewController(mode: .habit, cardStore: self.cardStore)
                 cardCreationViewController.onSave = { [weak self] card, sectionTitle in
                     guard let self else { return }
                     self.addCard(toSectionWithTitle: sectionTitle, card: card)
@@ -125,7 +142,7 @@ final class TrackerViewController: UIViewController {
         trackerCreationViewController.onIrregularEventTap = { [weak self] in
             guard let self else { return }
             trackerCreationViewController.dismiss(animated: true) {
-                let cardCreationViewController = CardCreationViewController(mode: .irregularEvent)
+                let cardCreationViewController = CardCreationViewController(mode: .irregularEvent, cardStore: self.cardStore)
                 cardCreationViewController.onSave = { [weak self] card, sectionTitle in
                     guard let self else { return }
                     self.addCard(toSectionWithTitle: sectionTitle, card: card)
@@ -170,7 +187,7 @@ final class TrackerViewController: UIViewController {
             }
         }
     }
-
+    
     private func updateEmptyState() {
         guard !sections.isEmpty else {
             showError()
@@ -238,6 +255,7 @@ final class TrackerViewController: UIViewController {
     }
     
     private func addCard(toSectionWithTitle sectionTitle: String, card: Card) {
+        cardStore.addCard(card)
         if let idx = allSections.firstIndex(where: { $0.title == sectionTitle }) {
             allSections[idx].cards.append(card)
         } else {
@@ -245,18 +263,17 @@ final class TrackerViewController: UIViewController {
         }
         filterSectionsForCurrentDate()
         updateEmptyState()
-        saveTrackers()
     }
     
     @objc private func onHabitButtonTap() {
-        let creationViewController = CardCreationViewController(mode: .habit)
+        let creationViewController = CardCreationViewController(mode: .habit, cardStore: cardStore)
         creationViewController.onSave = { [weak self] card, sectionTitle in
             guard let self else { return }
             self.addCard(toSectionWithTitle: sectionTitle, card: card)
         }
-        let nav = UINavigationController(rootViewController: creationViewController)
-        nav.modalPresentationStyle = .pageSheet
-        present(nav, animated: true)
+        let navigation = UINavigationController(rootViewController: creationViewController)
+        navigation.modalPresentationStyle = .pageSheet
+        present(navigation, animated: true)
     }
     
     private func pinTracker(at indexPath: IndexPath) {
@@ -269,17 +286,19 @@ final class TrackerViewController: UIViewController {
         }
         var newCard = cardToPin
         newCard.isPinned = true
+        cardStore.update(newCard)
+        
         if let pinnedIdx = allSections.firstIndex(where: { $0.title == pinnedSectionTitle }) {
             allSections[pinnedIdx].cards.append(newCard)
         } else {
             allSections.insert(TrackerSection(title: pinnedSectionTitle, cards: [newCard]), at: 0)
         }
         filterSectionsForCurrentDate()
-        saveTrackers()
     }
     
     private func unpinTracker(at indexPath: IndexPath) {
         let cardToUnpin = sections[indexPath.section].cards[indexPath.item]
+        
         if let pinnedSectionIndex = allSections.firstIndex(where: { $0.title == pinnedSectionTitle }) {
             allSections[pinnedSectionIndex].cards.removeAll { $0.id == cardToUnpin.id }
             if allSections[pinnedSectionIndex].cards.isEmpty {
@@ -288,6 +307,8 @@ final class TrackerViewController: UIViewController {
         }
         var newCard = cardToUnpin
         newCard.isPinned = false
+        cardStore.update(newCard)
+        
         let originalTitle = cardToUnpin.originalSectionTitle
         if let targetIdx = allSections.firstIndex(where: { $0.title == originalTitle }) {
             allSections[targetIdx].cards.append(newCard)
@@ -295,67 +316,56 @@ final class TrackerViewController: UIViewController {
             allSections.append(TrackerSection(title: originalTitle, cards: [newCard]))
         }
         filterSectionsForCurrentDate()
-        saveTrackers()
+        collectionView.reloadData()
     }
     
     private func editTracker(indexPath: IndexPath) {
         let oldCard = sections[indexPath.section].cards[indexPath.item]
         let editingMode: CardCreationViewController.Mode = oldCard.selectedDays.isEmpty
-            ? .irregularEvent : .habit
+        ? .irregularEvent : .habit
         let emojiIndex = IndexPath(item: CardCreationViewController.emojies.firstIndex(of: oldCard.emoji) ?? 0, section: 0)
         let colorIndex = IndexPath(item: oldCard.colorIndex, section: 0)
-
+        
         let cardCreationViewController = CardCreationViewController(
             mode: editingMode,
+            existingCardId: oldCard.id,
             initialSelectedEmojiIndex: emojiIndex,
             initialSelectedColorIndex: colorIndex,
             initialDescription: oldCard.description,
-            initialSelectedDays: oldCard.selectedDays
+            initialSelectedDays: oldCard.selectedDays,
+            cardStore: cardStore
         )
         
-    cardCreationViewController.onSave = { [weak self] (updatedCard: Card, updatedTitle: String) in
-        guard let self else { return }
+        cardCreationViewController.onSave = { [weak self] (updatedCard: Card, updatedTitle: String) in
+            guard let self else { return }
             var newCard = updatedCard
             newCard.isPinned = oldCard.isPinned
+            self.cardStore.update(newCard)
             
-            if let allSectionIdx = self.allSections.firstIndex(where: { $0.title == oldCard.originalSectionTitle }) {
-                self.allSections[allSectionIdx].cards.removeAll { $0.id == oldCard.id }
-                if self.allSections[allSectionIdx].cards.isEmpty {
-                    self.allSections.remove(at: allSectionIdx)
-                }
+            for i in 0..<self.allSections.count {
+                self.allSections[i].cards.removeAll { $0.id == oldCard.id }
             }
-            if let existingIdx = self.allSections.firstIndex(where: { $0.title == updatedTitle }) {
-                self.allSections[existingIdx].cards.append(newCard)
+            self.allSections.removeAll { $0.cards.isEmpty }
+            
+            if let idx = self.allSections.firstIndex(where: { $0.title == updatedTitle }) {
+                self.allSections[idx].cards.append(newCard)
             } else {
                 self.allSections.append(TrackerSection(title: updatedTitle, cards: [newCard]))
             }
             self.filterSectionsForCurrentDate()
             self.collectionView.reloadItems(at: [indexPath])
-            self.saveTrackers()
         }
         cardCreationViewController.modalPresentationStyle = UIModalPresentationStyle.pageSheet
         present(cardCreationViewController, animated: true)
     }
     
     private func deleteTracker(indexPath: IndexPath) {
-        let sectionTitle = sections[indexPath.section].title
         let cardToDelete = sections[indexPath.section].cards[indexPath.row]
-        if let allSectionIndex = allSections.firstIndex(where: { $0.title == sectionTitle }) {
-            allSections[allSectionIndex].cards.removeAll { $0.id == cardToDelete.id }
-            if allSections[allSectionIndex].cards.isEmpty {
-                allSections.remove(at: allSectionIndex)
-            }
-        }
-        
-        sections[indexPath.section].cards.remove(at: indexPath.row)
-        if sections[indexPath.section].cards.isEmpty {
-            sections.remove(at: indexPath.section)
-            collectionView.deleteSections(IndexSet(integer: indexPath.section))
-        } else {
-            collectionView.deleteItems(at: [indexPath])
-        }
+        cardStore.delete(cardToDelete)
+        loadCardsFromCoreData()
+        filterSectionsForCurrentDate()
+        collectionView.reloadData()
         updateEmptyState()
-        saveTrackers()
     }
     
     private func showDeleteConfirmation(for indexPath: IndexPath) {
@@ -378,32 +388,19 @@ final class TrackerViewController: UIViewController {
         }
         present(alert, animated: true, completion: nil)
     }
-
-    private func saveTrackers() {
-        if let data = try? encoder.encode(allSections) {
-            UserDefaults.standard.set(data, forKey: trackersKey)
-        }
-        let array = Array(completedRecords)
-        if let recordsData = try? encoder.encode(array) {
-            UserDefaults.standard.set(recordsData, forKey: recordsKey)
-        }
+    
+    private func loadCardsFromCoreData() {
+        let cards = cardStore.fetchCards()
+        self.allSections = groupCardsBySection(cards)
+        collectionView.reloadData()
     }
     
-    private func loadTrackers() {
-        let defaults = UserDefaults.standard
-        
-        if let data = defaults.data(forKey: trackersKey),
-           let decodedSections = try? decoder.decode([TrackerSection].self, from: data) {
-            allSections = decodedSections
-        } else {
-            allSections = []
+    private func groupCardsBySection(_ cards: [Card]) -> [TrackerSection] {
+        var sectionDict: [String: [Card]] = [:]
+        for card in cards {
+            sectionDict[card.originalSectionTitle, default: []].append(card)
         }
-        if let recordedData = defaults.data(forKey: recordsKey),
-           let decodedArray = try? decoder.decode([TrackerRecord].self, from: recordedData) {
-            completedRecords = Set(decodedArray)
-        } else {
-            completedRecords = []
-        }
+        return sectionDict.map { TrackerSection(title: $0.key, cards: $0.value) }
     }
 }
 
@@ -430,7 +427,7 @@ extension TrackerViewController: UICollectionViewDataSource {
         cell.onToggleComplete = { [weak self] cellIndexPath, newIsCompleted in
             guard let self else { return }
             let pickedDay = self.currentDate.stripTimeComponent()
-            let today     = Date().stripTimeComponent()
+            let today = Date().stripTimeComponent()
             if pickedDay > today {
                 let alert = UIAlertController(
                     title: "Ошибка",
@@ -441,17 +438,18 @@ extension TrackerViewController: UICollectionViewDataSource {
                 self.present(alert, animated: true)
                 return
             }
-            
             let tappedCard = self.sections[cellIndexPath.section].cards[cellIndexPath.item]
             let trackerId   = tappedCard.id
             let recordForDate = TrackerRecord(trackerId: trackerId, date: self.currentDate)
             
             if newIsCompleted {
                 self.completedRecords.insert(recordForDate)
+                self.trackerRecordStore.add(recordForDate)
+                
             } else {
                 self.completedRecords.remove(recordForDate)
+                self.trackerRecordStore.delete(recordForDate)
             }
-            self.saveTrackers()
             self.collectionView.reloadItems(at: [cellIndexPath])
         }
         return cell

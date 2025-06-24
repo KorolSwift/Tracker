@@ -10,7 +10,7 @@ import UIKit
 
 final class ScheduleViewController: UIViewController {
     
-
+    
     private let scheduleTitle: UILabel = {
         let title = UILabel()
         title.textColor = .ypBlack
@@ -82,7 +82,6 @@ final class ScheduleViewController: UIViewController {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            
             scheduleTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
             scheduleTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
@@ -101,7 +100,6 @@ final class ScheduleViewController: UIViewController {
             doneButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             doneButton.heightAnchor.constraint(equalToConstant:  60)
-            
         ])
     }
     
@@ -113,7 +111,6 @@ final class ScheduleViewController: UIViewController {
     @objc private func doneButtonTapped() {
         let selectedDays = daysOfWeek.enumerated()
             .compactMap { togglesState[$0.offset] ? $0.element : nil }
-        
         onSave?(selectedDays)
         dismiss(animated: true, completion: nil)
     }
@@ -128,7 +125,6 @@ extension ScheduleViewController: UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ChooseDayCell.reuseIdentifier, for: indexPath) as? ChooseDayCell else {
             return UITableViewCell()
         }
-        
         let dayName = daysOfWeek[indexPath.row]
         let isOn = togglesState[indexPath.row]
         cell.configure(dayName: dayName, isOn: isOn)

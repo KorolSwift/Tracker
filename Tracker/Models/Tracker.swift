@@ -13,5 +13,5 @@ struct Tracker {
     let name: String
     let colour: String
     let emoji: String
-    let schedule: String 
+    let schedule: String
 }

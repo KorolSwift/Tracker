@@ -14,7 +14,8 @@ final class CardCreationViewController: UIViewController {
         case irregularEvent
     }
     private let mode: Mode
-
+    private let existingCardId: UUID?
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = Constants.CardCreation.titleLabel
@@ -70,41 +71,18 @@ final class CardCreationViewController: UIViewController {
         return view
     }()
     
-    private let categoryButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle(Constants.CardCreation.categoryButtonTitle, for: .normal)
-        button.titleLabel?.font = .sfProDisplayRegular17
-        button.setTitleColor(.ypBlack, for: .normal)
-        button.layer.cornerRadius = 16
-        button.layer.masksToBounds = true
-        button.contentHorizontalAlignment = .left
-        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        let arrowImage = UIImage(systemName: "chevron.right")?
-            .withTintColor(.ypGray, renderingMode: .alwaysOriginal)
-        button.setImage(arrowImage, for: .normal)
-        button.semanticContentAttribute = .forceRightToLeft
-        button.imageEdgeInsets = .zero
+    private lazy var categoryButton: ChevronButton = {
+        let button = ChevronButton()
+        button.setTitle(Constants.CardCreation.categoryButtonTitle)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    private let scheduleButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle(Constants.CardCreation.scheduleButtonTitle, for: .normal)
-        button.titleLabel?.font = .sfProDisplayRegular17
-        button.setTitleColor(.ypBlack, for: .normal)
-        button.layer.cornerRadius = 16
-        button.layer.masksToBounds = true
-        button.titleLabel?.numberOfLines = 1
-        button.titleLabel?.textAlignment = .left
-        button.contentHorizontalAlignment = .left
-        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        let arrowImage = UIImage(systemName: "chevron.right")?
-            .withTintColor(.ypGray, renderingMode: .alwaysOriginal)
-        button.setImage(arrowImage, for: .normal)
-        button.semanticContentAttribute = .forceRightToLeft
-        button.imageEdgeInsets = .zero
+    private lazy var scheduleButton: ChevronButton = {
+        let button = ChevronButton()
+        button.setTitle(Constants.CardCreation.scheduleButtonTitle)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(scheduleButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -162,13 +140,16 @@ final class CardCreationViewController: UIViewController {
         return button
     }()
     
+    private let cardStore: CardStore
     var onSave: ((Card, String) -> Void)?
     private var selectedEmoji: String = ""
     private var selectedColor: UIColor = .ypBlue
     private var isScheduleSelected: Bool = false
     private var buttonsContainerTopToDescConstraint: NSLayoutConstraint!
     private var buttonsContainerTopToErrorConstraint: NSLayoutConstraint!
+    
     private let emojiHeaderView = EmojiHeaderView()
+    private let colorHeaderView = ColorHeaderView()
     
     private lazy var emojiCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -179,15 +160,17 @@ final class CardCreationViewController: UIViewController {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(EmojiCell.self, forCellWithReuseIdentifier: "EmojiCell")
+        collectionView.register(EmojiHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "EmojiHeaderView")
         collectionView.backgroundColor = .clear
         collectionView.dataSource = self
         collectionView.delegate = self
+        collectionView.allowsMultipleSelection = false
+        collectionView.isScrollEnabled = false
         return collectionView
     }()
     
     static let emojies = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     private var selectedEmojiIndex: IndexPath?
-    private let colorHeaderView = ColorHeaderView()
     
     private lazy var colorCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -198,9 +181,12 @@ final class CardCreationViewController: UIViewController {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(ColorCell.self, forCellWithReuseIdentifier: "ColorCell")
+        collectionView.register(ColorHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "ColorHeaderView")
         collectionView.backgroundColor = .clear
         collectionView.dataSource = self
         collectionView.delegate = self
+        collectionView.allowsMultipleSelection = false
+        collectionView.isScrollEnabled = false
         return collectionView
     }()
     
@@ -210,7 +196,6 @@ final class CardCreationViewController: UIViewController {
         .selection13, .selection14, .selection15, .selection16, .selection17, .selection18
     ]
     
-    private var color: Int = 0
     private var selectedColorIndex: IndexPath?
     
     let scrollView = UIScrollView()
@@ -220,19 +205,23 @@ final class CardCreationViewController: UIViewController {
     var initialSelectedDays: [String]?
     var initialEmojiIndex: IndexPath?
     var initialColorIndex: IndexPath?
-
+    
     init(
         mode: Mode,
+        existingCardId: UUID? = nil,
         initialSelectedEmojiIndex: IndexPath? = nil,
         initialSelectedColorIndex: IndexPath? = nil,
         initialDescription: String? = nil,
-        initialSelectedDays: [String]? = nil
+        initialSelectedDays: [String]? = nil,
+        cardStore: CardStore
     ) {
         self.mode = mode
+        self.existingCardId = existingCardId
         self.initialEmojiIndex = initialSelectedEmojiIndex
         self.initialColorIndex = initialSelectedColorIndex
         self.initialDescription = initialDescription
         self.initialSelectedDays = initialSelectedDays
+        self.cardStore = cardStore
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -245,48 +234,58 @@ final class CardCreationViewController: UIViewController {
         view.backgroundColor = .ypWhite
         
         switch mode {
-        case .habit:
-            titleLabel.text = "Новая привычка"
-        case .irregularEvent:
-            titleLabel.text = "Новое нерегулярное событие"
-        }
-        
-        if mode == .irregularEvent {
-            scheduleButton.isHidden = true
-            buttonsSeparator.isHidden = true
+        case .habit: titleLabel.text = "Новая привычка"
+        case .irregularEvent: titleLabel.text = "Новое нерегулярное событие"
         }
         
         navigationController?.navigationBar.prefersLargeTitles = true
         descriptionTextView.delegate = self
         
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.translatesAutoresizingMaskIntoConstraints = false
+        categoryButton.setTitle(Constants.CardCreation.categoryButtonTitle)
+        categoryButton.setTitleColor(.ypBlack)
+        
+        updateScheduleButtonTitle(from: currentSelectedDays)
+        
+        if let days = initialSelectedDays, !days.isEmpty {
+            currentSelectedDays = days
+            updateScheduleButtonTitle(from: days)
+            isScheduleSelected = true
+        }
         
         saveButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
         cancelButton.addTarget(self, action: #selector(cancellButtonTapped), for: .touchUpInside)
-        scheduleButton.addTarget(self, action: #selector(scheduleButtonTapped), for: .touchUpInside)
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
         
+        view.addSubview(titleLabel)
         view.addSubview(scrollView)
+        view.addSubview(bottomButtonStack)
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentView)
         
-        buttonsContainer.addSubview(categoryButton)
-        buttonsContainer.addSubview(buttonsSeparator)
-        buttonsContainer.addSubview(scheduleButton)
         contentView.addSubview(descriptionTextView)
         contentView.addSubview(clearButton)
         contentView.addSubview(errorLabel)
         contentView.addSubview(buttonsContainer)
+        
+        if mode == .habit {
+            buttonsContainer.addSubview(categoryButton)
+            buttonsContainer.addSubview(buttonsSeparator)
+            buttonsContainer.addSubview(scheduleButton)
+        } else {
+            buttonsContainer.addSubview(categoryButton)
+        }
+        
         contentView.addSubview(emojiCollectionView)
         contentView.addSubview(colorCollectionView)
         
-        view.addSubview(titleLabel)
-        view.addSubview(bottomButtonStack)
-        
         setupConstraints()
+        
+        emojiCollectionView.reloadData()
+        colorCollectionView.reloadData()
         
         if let description = initialDescription {
             descriptionTextView.text = description
@@ -300,23 +299,13 @@ final class CardCreationViewController: UIViewController {
         if let emojiIndex = initialEmojiIndex {
             selectedEmojiIndex = emojiIndex
             selectedEmoji = CardCreationViewController.emojies[emojiIndex.item]
+            emojiCollectionView.selectItem(at: emojiIndex, animated: false, scrollPosition: [])
         }
         if let colorIndex = initialColorIndex {
             selectedColorIndex = colorIndex
             selectedColor = CardCreationViewController.colors[colorIndex.item]
+            colorCollectionView.selectItem(at: colorIndex, animated: false, scrollPosition: [])
         }
-        
-        emojiCollectionView.reloadData()
-        colorCollectionView.reloadData()
-        emojiCollectionView.register(EmojiHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "EmojiHeaderView")
-        
-        colorCollectionView.register(ColorHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "ColorHeaderView")
-        
-        emojiCollectionView.allowsMultipleSelection = false
-        colorCollectionView.allowsMultipleSelection = false
-        
-        emojiCollectionView.isScrollEnabled = false
-        colorCollectionView.isScrollEnabled = false
     }
     
     private func setupConstraints() {
@@ -339,11 +328,6 @@ final class CardCreationViewController: UIViewController {
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-            
-            categoryButton.topAnchor.constraint(equalTo: buttonsContainer.topAnchor),
-            categoryButton.leadingAnchor.constraint(equalTo: buttonsContainer.leadingAnchor),
-            categoryButton.trailingAnchor.constraint(equalTo: buttonsContainer.trailingAnchor),
-            categoryButton.heightAnchor.constraint(equalToConstant: 74.5),
             
             descriptionTextView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             descriptionTextView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -383,9 +367,14 @@ final class CardCreationViewController: UIViewController {
         
         if mode == .habit {
             NSLayoutConstraint.activate([
+                categoryButton.topAnchor.constraint(equalTo: buttonsContainer.topAnchor),
+                categoryButton.leadingAnchor.constraint(equalTo: buttonsContainer.leadingAnchor),
+                categoryButton.trailingAnchor.constraint(equalTo: buttonsContainer.trailingAnchor),
+                categoryButton.heightAnchor.constraint(equalToConstant: 74.5),
+                
                 buttonsSeparator.topAnchor.constraint(equalTo: categoryButton.bottomAnchor),
-                buttonsSeparator.leadingAnchor.constraint(equalTo: buttonsContainer.leadingAnchor,constant: 16),
-                buttonsSeparator.trailingAnchor.constraint(equalTo: buttonsContainer.trailingAnchor,constant: -16),
+                buttonsSeparator.leadingAnchor.constraint(equalTo: buttonsContainer.leadingAnchor, constant: 16),
+                buttonsSeparator.trailingAnchor.constraint(equalTo: buttonsContainer.trailingAnchor, constant: -16),
                 buttonsSeparator.heightAnchor.constraint(equalToConstant: 1),
                 
                 scheduleButton.topAnchor.constraint(equalTo: buttonsSeparator.bottomAnchor),
@@ -393,7 +382,15 @@ final class CardCreationViewController: UIViewController {
                 scheduleButton.trailingAnchor.constraint(equalTo: buttonsContainer.trailingAnchor),
                 scheduleButton.heightAnchor.constraint(equalToConstant: 74.5)
             ])
-        }}
+        } else {
+            NSLayoutConstraint.activate([
+                categoryButton.topAnchor.constraint(equalTo: buttonsContainer.topAnchor),
+                categoryButton.leadingAnchor.constraint(equalTo: buttonsContainer.leadingAnchor),
+                categoryButton.trailingAnchor.constraint(equalTo: buttonsContainer.trailingAnchor),
+                categoryButton.bottomAnchor.constraint(equalTo: buttonsContainer.bottomAnchor)
+            ])
+        }
+    }
     
     @objc private func didTapClear() {
         descriptionTextView.text = ""
@@ -424,13 +421,14 @@ final class CardCreationViewController: UIViewController {
     @objc private func createButtonTapped() {
         let index = selectedColorIndex?.item ?? 0
         let card = Card(
-            id: UUID(),
+            id: existingCardId ?? UUID(),
             emoji: selectedEmoji,
             description: descriptionTextView.text ?? "",
             colorIndex: index,
             selectedDays: currentSelectedDays,
             originalSectionTitle: categoryButton.currentTitle ?? ""
         )
+        cardStore.save(card)
         onSave?(card, categoryButton.currentTitle ?? "")
         dismiss(animated: true)
     }
@@ -440,7 +438,7 @@ final class CardCreationViewController: UIViewController {
         scheduleViewController.initialSelectedDays = currentSelectedDays
         
         scheduleViewController.onSave = { [weak self] selectedDays in
-            guard let self else { return }
+            guard let self = self else { return }
             guard !selectedDays.isEmpty else { return }
             self.updateScheduleButtonTitle(from: selectedDays)
             self.isScheduleSelected = true
@@ -452,24 +450,20 @@ final class CardCreationViewController: UIViewController {
     }
     
     private func updateScheduleButtonTitle(from days: [String]) {
-        let fullText: String
-        if days.count == 7 {
-            fullText = "Расписание\nКаждый день"
-        } else {
-            let shortList = days.compactMap { self.dayAbbreviations[$0] }
-            let daysText = shortList.joined(separator: ", ")
-            fullText = "Расписание\n" + daysText
+        guard !days.isEmpty else {
+            scheduleButton.setTitle(Constants.CardCreation.scheduleButtonTitle)
+            scheduleButton.setTitleColor(.ypBlack)
+            return
         }
-        
-        let attributedText = NSMutableAttributedString(string: fullText)
-        let firstLineRange = (fullText as NSString).range(of: "Расписание")
-        let secondLineRange = (fullText as NSString).range(of: fullText.replacingOccurrences(of: "Расписание\n", with: ""))
-        
-        attributedText.addAttribute(.foregroundColor, value: UIColor.ypBlack, range: firstLineRange)
-        attributedText.addAttribute(.foregroundColor, value: UIColor.ypGray, range: secondLineRange)
-        
-        scheduleButton.titleLabel?.numberOfLines = 2
-        scheduleButton.setAttributedTitle(attributedText, for: .normal)
+        let full: String = days.count == 7
+        ? "Расписание\nКаждый день"
+        : "Расписание\n" + days.map { dayAbbreviations[$0]! }.joined(separator: ", ")
+        let attr = NSMutableAttributedString(string: full)
+        let headerRange = (full as NSString).range(of: "Расписание")
+        let bodyRange = NSRange(location: headerRange.length+1, length: full.count - headerRange.length - 1)
+        attr.addAttribute(.foregroundColor, value: UIColor.ypBlack, range: headerRange)
+        attr.addAttribute(.foregroundColor, value: UIColor.ypGray,  range: bodyRange)
+        scheduleButton.setAttributedTitle(attr)
     }
     
     @objc private func textFieldChanged() {
@@ -478,18 +472,16 @@ final class CardCreationViewController: UIViewController {
     
     private func updateSaveButtonState() {
         let textValid = !descriptionTextView.text.trimmingCharacters(in: .whitespaces).isEmpty && descriptionTextView.textColor != .ypGray
-
         let canCreate: Bool
         switch mode {
         case .habit:
             canCreate = textValid && isScheduleSelected && selectedEmojiIndex != nil && selectedColorIndex != nil
         case .irregularEvent:
-            canCreate = textValid
+            canCreate = textValid && selectedEmojiIndex != nil && selectedColorIndex != nil
         }
         saveButton.isEnabled = canCreate
         saveButton.backgroundColor = canCreate ? .ypBlack : .ypGray
     }
-    
     @objc private func cancellButtonTapped() {
         dismiss(animated: true)
     }
@@ -530,26 +522,28 @@ extension CardCreationViewController: UITextViewDelegate {
 
 extension CardCreationViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return collectionView == emojiCollectionView ? CardCreationViewController.emojies.count : CardCreationViewController.colors.count
+        return collectionView == emojiCollectionView
+        ? CardCreationViewController.emojies.count
+        : CardCreationViewController.colors.count
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == emojiCollectionView {
-             if let prev = selectedEmojiIndex, prev != indexPath {
-                 collectionView.deselectItem(at: prev, animated: false)
-             }
-             selectedEmojiIndex = indexPath
+            if let previous = selectedEmojiIndex, previous != indexPath {
+                collectionView.deselectItem(at: previous, animated: false)
+            }
+            selectedEmojiIndex = indexPath
             selectedEmoji = CardCreationViewController.emojies[indexPath.item]
             collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
-         } else {
-             if let prev = selectedColorIndex, prev != indexPath {
-                 collectionView.deselectItem(at: prev, animated: false)
-             }
-             selectedColorIndex = indexPath
-             selectedColor = CardCreationViewController.colors[indexPath.item]
-             collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
-         }
-         updateSaveButtonState()
+        } else {
+            if let previous = selectedColorIndex, previous != indexPath {
+                collectionView.deselectItem(at: previous, animated: false)
+            }
+            selectedColorIndex = indexPath
+            selectedColor = CardCreationViewController.colors[indexPath.item]
+            collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+        }
+        updateSaveButtonState()
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -561,12 +555,22 @@ extension CardCreationViewController: UICollectionViewDataSource, UICollectionVi
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == emojiCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as! EmojiCell
-            cell.configure(with: CardCreationViewController.emojies[indexPath.item])
+            let rawCell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath)
+            guard let cell = rawCell as? EmojiCell else {
+                assertionFailure("Не удалось получить EmojiCell")
+                return UICollectionViewCell()
+            }
+            let emoji = CardCreationViewController.emojies[indexPath.item]
+            cell.configure(with: emoji)
             return cell
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as! ColorCell
-            cell.configure(with: CardCreationViewController.colors[indexPath.item])
+            let rawCell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath)
+            guard let cell = rawCell as? ColorCell else {
+                assertionFailure("Не удалось получить ColorCell")
+                return UICollectionViewCell()
+            }
+            let color = CardCreationViewController.colors[indexPath.item]
+            cell.configure(with: color)
             return cell
         }
     }
@@ -576,18 +580,25 @@ extension CardCreationViewController: UICollectionViewDataSource, UICollectionVi
             return UICollectionReusableView()
         }
         if collectionView == emojiCollectionView {
-            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "EmojiHeaderView", for: indexPath) as! EmojiHeaderView
+            let rawHeader = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "EmojiHeaderView", for: indexPath)
+            guard let header = rawHeader as? EmojiHeaderView else {
+                assertionFailure("Не удалось получить EmojiHeaderView")
+                return UICollectionReusableView()
+            }
             header.title.text = "Emoji"
             return header
-        } else if collectionView == colorCollectionView {
-            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "ColorHeaderView", for: indexPath) as! ColorHeaderView
+        } else {
+            let rawHeader = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "ColorHeaderView", for: indexPath)
+            guard let header = rawHeader as? ColorHeaderView else {
+                assertionFailure("Не удалось получить ColorHeaderView")
+                return UICollectionReusableView()
+            }
             header.title.text = "Цвет"
             return header
         }
-        return UICollectionReusableView()
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        CGSize(width: collectionView.bounds.width, height: 42)
+        return CGSize(width: collectionView.bounds.width, height: 42)
     }
 }
