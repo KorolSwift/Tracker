@@ -29,7 +29,11 @@ final class CardStore {
         entity.selectedDays = card.selectedDays as NSArray
         entity.originalSectionTitle = card.originalSectionTitle
         entity.isPinned = card.isPinned
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save context: \(error.localizedDescription)")
+        }
     }
     
     func fetchCards() -> [Card] {

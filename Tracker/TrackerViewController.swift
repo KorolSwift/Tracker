@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 
 final class TrackerViewController: UIViewController {
@@ -30,9 +31,24 @@ final class TrackerViewController: UIViewController {
     private let pinnedSectionTitle = "Закрепленные"
     private let trackersKey = "trackersData"
     private let recordsKey = "trackerRecordsData"
-    
-    private let cardStore = CardStore(context: (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext)
-    private let trackerRecordStore = TrackerRecordStore(context: (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext)
+
+    private lazy var cardStore: CardStore = {
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            return CardStore(context: appDelegate.persistentContainer.viewContext)
+        } else {
+            assertionFailure("AppDelegate не найден или не того типа")
+            return CardStore(context: NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType))
+        }
+    }()
+
+    private lazy var trackerRecordStore: TrackerRecordStore = {
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            return TrackerRecordStore(context: appDelegate.persistentContainer.viewContext)
+        } else {
+            assertionFailure("AppDelegate не найден или не того типа")
+            return TrackerRecordStore(context: NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType))
+        }
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()

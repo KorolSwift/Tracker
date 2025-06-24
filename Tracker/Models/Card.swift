@@ -8,7 +8,7 @@
 import UIKit
 
 
-struct Card: Codable {
+struct Card {
     let id: UUID
     let emoji: String
     let description: String

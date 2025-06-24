@@ -8,7 +8,7 @@
 import UIKit
 
 
-struct TrackerSection: Codable {
+struct TrackerSection {
     let title: String
     var cards: [Card]
 }
