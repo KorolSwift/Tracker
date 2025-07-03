@@ -31,7 +31,7 @@ final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
     init(context: NSManagedObjectContext) {
         self.context = context
         super.init()
-        _ = fetchedResultsController
+        try? fetchedResultsController.performFetch()
     }
     
     @objc func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {

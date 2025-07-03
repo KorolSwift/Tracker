@@ -10,29 +10,39 @@ import UIKit
 
 
 final class CardStore {
+    
     private let context: NSManagedObjectContext
     init(context: NSManagedObjectContext) {
         self.context = context
     }
     
     func addCard(_ card: Card) {
-        let check: NSFetchRequest<CardCoreData> = CardCoreData.fetchRequest()
-        check.predicate = NSPredicate(format: "id == %@", card.id as CVarArg)
-        if let existing = try? context.fetch(check), !existing.isEmpty {
-            return
-        }
         let entity = CardCoreData(context: context)
         entity.id = card.id
         entity.emoji = card.emoji
         entity.descriptionText = card.description
         entity.colorIndex = Int32(card.colorIndex)
-        entity.selectedDays = card.selectedDays as NSArray
+        entity.selectedDays = card.selectedDays as NSObject
         entity.originalSectionTitle = card.originalSectionTitle
+        
         entity.isPinned = card.isPinned
+        
+        if let category = card.category {
+            let request: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+            request.predicate = NSPredicate(format: "name == %@", category.name)
+            
+            if let existingCategory = try? context.fetch(request).first {
+                entity.category = existingCategory
+            } else {
+                let newCategory = TrackerCategoryCoreData(context: context)
+                newCategory.name = category.name
+                entity.category = newCategory
+            }
+        }
         do {
             try context.save()
         } catch {
-            print("Failed to save context: \(error.localizedDescription)")
+            print("Ошибка при сохранении: \(error)")
         }
     }
     
@@ -44,13 +54,22 @@ final class CardStore {
                 guard
                     let id = entity.id,
                     let emoji = entity.emoji,
-                    let description = entity.descriptionText,
-                    let selectedDays = entity.selectedDays as? [String],
-                    let sectionTitle = entity.originalSectionTitle
+                    let description = entity.descriptionText
                 else {
                     return nil
                 }
+                
+                let selectedDays = entity.selectedDays as? [String] ?? []
+                let originalSectionTitle = entity.originalSectionTitle ?? ""
                 let isPinned = entity.isPinned
+                
+                let category: TrackerCategory? = {
+                    if let categoryEntity = entity.category,
+                       let name = categoryEntity.name {
+                        return TrackerCategory(name: name, trackers: [])
+                    }
+                    return nil
+                }()
                 
                 return Card(
                     id: id,
@@ -58,8 +77,9 @@ final class CardStore {
                     description: description,
                     colorIndex: Int(entity.colorIndex),
                     selectedDays: selectedDays,
-                    originalSectionTitle: sectionTitle,
-                    isPinned: isPinned
+                    originalSectionTitle: originalSectionTitle,
+                    isPinned: isPinned,
+                    category: category
                 )
             }
         } catch {
@@ -71,6 +91,7 @@ final class CardStore {
     func save(_ card: Card) {
         let request: NSFetchRequest<CardCoreData> = CardCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", card.id as CVarArg)
+        
         do {
             if let existing = try context.fetch(request).first {
                 existing.emoji = card.emoji
@@ -79,15 +100,19 @@ final class CardStore {
                 existing.selectedDays = card.selectedDays as NSObject
                 existing.originalSectionTitle = card.originalSectionTitle
                 existing.isPinned = card.isPinned
+                
+                if let category = card.category {
+                    let categoryRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+                    categoryRequest.predicate = NSPredicate(format: "name == %@", category.name)
+                    
+                    let categories = try context.fetch(categoryRequest)
+                    if let categoryEntity = categories.first {
+                        existing.category = categoryEntity
+                    }
+                }
             } else {
-                let entity = CardCoreData(context: context)
-                entity.id = card.id
-                entity.emoji = card.emoji
-                entity.descriptionText = card.description
-                entity.colorIndex = Int32(card.colorIndex)
-                entity.selectedDays = card.selectedDays as NSObject
-                entity.originalSectionTitle = card.originalSectionTitle
-                entity.isPinned = card.isPinned
+                addCard(card)
+                return
             }
             try context.save()
         } catch {
@@ -122,6 +147,15 @@ final class CardStore {
                 entity.originalSectionTitle = card.originalSectionTitle
                 entity.isPinned = card.isPinned
                 
+                if let category = card.category {
+                    let fetchCategory: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+                    fetchCategory.predicate = NSPredicate(format: "name == %@", category.name)
+                    
+                    let categories = try context.fetch(fetchCategory)
+                    if let found = categories.first {
+                        entity.category = found
+                    }
+                }
                 try context.save()
             }
         } catch {

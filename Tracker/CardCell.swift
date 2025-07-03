@@ -105,7 +105,6 @@ final class CardCell: UICollectionViewCell {
         [colorContainer, pinImageView, emojiBackgroundView, emojiLabel, descriptionLabel, dayLabel, plusButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
-        
         contentView.addSubview(colorContainer)
         colorContainer.addSubviews(pinImageView, emojiBackgroundView, descriptionLabel)
         emojiBackgroundView.addSubviews(emojiLabel)

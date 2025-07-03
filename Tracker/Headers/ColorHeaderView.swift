@@ -28,5 +28,7 @@ final class ColorHeaderView: UICollectionReusableView {
             title.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
-    required init?(coder: NSCoder) { fatalError() }
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
 }

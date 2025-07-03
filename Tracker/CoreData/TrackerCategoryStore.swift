@@ -14,7 +14,7 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
     
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData> = {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         
         let controller = NSFetchedResultsController<TrackerCategoryCoreData>(
             fetchRequest: fetchRequest,
@@ -40,10 +40,41 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
         }
         let categories = objects.map { categoryEntity in
             TrackerCategory(
-                title: categoryEntity.title ?? "",
+                name: categoryEntity.name ?? "",
                 trackers: []
             )
         }
         delegate?.didUpdateCategories(categories)
+    }
+    
+    var fetchedCategories: [TrackerCategory] {
+        guard let objects = fetchedResultsController.fetchedObjects else { return [] }
+        return objects.map {
+            TrackerCategory(name: $0.name ?? "", trackers: [])
+        }
+    }
+    
+    func addCategory(name: String, trackers: [CardCoreData]) throws {
+        let req: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        req.predicate = NSPredicate(format: "name == %@", name)
+        if let existing = try? context.fetch(req), !existing.isEmpty {
+            return
+        }
+        let category = TrackerCategoryCoreData(context: context)
+        category.name = name
+        category.trackers = NSSet(array: trackers)
+        try context.save()
+    }
+    
+    func deleteCategory(_ name: String) {
+        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", name)
+        
+        if let results = try? context.fetch(fetchRequest) {
+            for category in results {
+                context.delete(category)
+            }
+            try? context.save()
+        }
     }
 }

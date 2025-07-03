@@ -10,6 +10,9 @@ enum Constants {
     enum Schedule {
         static let scheduleTitle = "Расписание"
     }
+    enum Category {
+        static let categoryTitle = "Категория"
+    }
     
     enum CardCreation {
         static let errorLabel = "Ограничение 38 символов"
@@ -23,5 +26,6 @@ enum Constants {
         static let trackerCreationTitle = "Создание трекера"
         static let irregularEventButtonTitle = "Нерегулярное событие"
         static let habitButtonTitle = "Привычка"
+        static let addCategoryButtonTitle = "Добавить категорию"
     }
 }
