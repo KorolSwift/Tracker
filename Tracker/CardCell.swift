@@ -9,6 +9,7 @@ import UIKit
 
 
 final class CardCell: UICollectionViewCell {
+    static let reuseIdentifier = "CardCell"
     
     let colorContainer: UIView = {
         let view = UIView()
@@ -86,7 +87,9 @@ final class CardCell: UICollectionViewCell {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupUI()
+        setupConstraints()
     }
     
     private func setupSubviews() {
@@ -105,7 +108,6 @@ final class CardCell: UICollectionViewCell {
         [colorContainer, pinImageView, emojiBackgroundView, emojiLabel, descriptionLabel, dayLabel, plusButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
-        
         contentView.addSubview(colorContainer)
         colorContainer.addSubviews(pinImageView, emojiBackgroundView, descriptionLabel)
         emojiBackgroundView.addSubviews(emojiLabel)

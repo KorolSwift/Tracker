@@ -16,7 +16,7 @@ final class EmojiCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.addSubview(emojiLabel)
@@ -29,15 +29,17 @@ final class EmojiCell: UICollectionViewCell {
         contentView.layer.cornerRadius = 16
         contentView.layer.masksToBounds = true
     }
-
-    required init?(coder: NSCoder) { fatalError() }
-
+    
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
+    
     override var isSelected: Bool {
         didSet {
             contentView.backgroundColor = isSelected ? .ypLightGray : .clear
         }
     }
-
+    
     func configure(with emoji: String) {
         emojiLabel.text = emoji
     }

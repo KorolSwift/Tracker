@@ -9,8 +9,6 @@ import UIKit
 
 
 final class ScheduleViewController: UIViewController {
-    
-    
     private let scheduleTitle: UILabel = {
         let title = UILabel()
         title.textColor = .ypBlack
@@ -71,16 +69,16 @@ final class ScheduleViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         
+        setupLayout()
+        doneButton.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
+    }
+    
+    private func setupLayout() {
         view.addSubview(weekContainerView)
         weekContainerView.addSubview(tableView)
         view.addSubview(scheduleTitle)
         view.addSubview(doneButton)
         
-        setupConstraints()
-        doneButton.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
-    }
-    
-    private func setupConstraints() {
         NSLayoutConstraint.activate([
             scheduleTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
             scheduleTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),

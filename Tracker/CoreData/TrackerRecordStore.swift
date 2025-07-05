@@ -24,14 +24,22 @@ final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
             cacheName: nil
         )
         controller.delegate = self
-        try? controller.performFetch()
+        do {
+            try controller.performFetch()
+        } catch {
+            print("Ошибка при performFetch() в TrackerRecordStore: \(error.localizedDescription)")
+        }
         return controller
     }()
     
     init(context: NSManagedObjectContext) {
         self.context = context
         super.init()
-        _ = fetchedResultsController
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            print("Ошибка при performFetch() в init TrackerRecordStore: \(error.localizedDescription)")
+        }
     }
     
     @objc func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
@@ -55,7 +63,11 @@ final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
         let entity = TrackerRecordCoreData(context: context)
         entity.trackerId = record.trackerId
         entity.date = record.date
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка при сохранении TrackerRecord: \(error.localizedDescription)")
+        }
     }
     
     func delete(_ record: TrackerRecord) {
@@ -65,9 +77,13 @@ final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
             record.trackerId as CVarArg,
             record.date as NSDate
         )
-        if let object = try? context.fetch(request).first {
-            context.delete(object)
-            try? context.save()
+        do {
+            if let object = try context.fetch(request).first {
+                context.delete(object)
+                try context.save()
+            }
+        } catch {
+            print("Ошибка при удалении TrackerRecord: \(error.localizedDescription)")
         }
     }
     

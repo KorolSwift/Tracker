@@ -19,7 +19,7 @@ final class TrackerCreationViewController: UIViewController {
         return label
     }()
     
-    private let habitButton: UIButton = {
+    private lazy var habitButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.CardCreation.habitButtonTitle, for: .normal)
         button.backgroundColor = .ypBlack
@@ -32,7 +32,7 @@ final class TrackerCreationViewController: UIViewController {
         return button
     }()
     
-    private let irregularEventButton: UIButton = {
+    private lazy var irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.CardCreation.irregularEventButtonTitle, for: .normal)
         button.backgroundColor = .ypBlack
@@ -51,13 +51,14 @@ final class TrackerCreationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .ypWhite
+        setupLayout()
+    }
+    
+    private func setupLayout() {
         view.addSubview(habitButton)
         view.addSubview(irregularEventButton)
         view.addSubview(titleLabel)
-        setupConstraints()
-    }
-    
-    private func setupConstraints() {
+        
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 26),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),

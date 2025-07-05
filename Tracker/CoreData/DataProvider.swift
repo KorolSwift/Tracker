@@ -27,7 +27,11 @@ final class DataProvider: NSObject {
             cacheName: nil
         )
         fetchedResultsController.delegate = self
-        try? fetchedResultsController.performFetch()
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            print("Ошибка при выполнении performFetch: \(error)")
+        }
         return fetchedResultsController
     }()
 }

@@ -31,7 +31,7 @@ final class TrackerViewController: UIViewController {
     private let pinnedSectionTitle = "Закрепленные"
     private let trackersKey = "trackersData"
     private let recordsKey = "trackerRecordsData"
-
+    
     private lazy var cardStore: CardStore = {
         if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             return CardStore(context: appDelegate.persistentContainer.viewContext)
@@ -40,7 +40,7 @@ final class TrackerViewController: UIViewController {
             return CardStore(context: NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType))
         }
     }()
-
+    
     private lazy var trackerRecordStore: TrackerRecordStore = {
         if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             return TrackerRecordStore(context: appDelegate.persistentContainer.viewContext)
@@ -68,7 +68,6 @@ final class TrackerViewController: UIViewController {
             .font: UIFont.sfProDisplayBold34 ?? UIFont.systemFont(ofSize: 34, weight: .bold),
             .foregroundColor: UIColor.ypBlack
         ]
-        
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         
@@ -256,11 +255,8 @@ final class TrackerViewController: UIViewController {
     
     private func addCard(toSectionWithTitle sectionTitle: String, card: Card) {
         cardStore.addCard(card)
-        if let idx = allSections.firstIndex(where: { $0.title == sectionTitle }) {
-            allSections[idx].cards.append(card)
-        } else {
-            allSections.append(TrackerSection(title: sectionTitle, cards: [card]))
-        }
+        self.allSections = []
+        loadCardsFromCoreData()
         filterSectionsForCurrentDate()
         updateEmptyState()
     }
@@ -333,9 +329,9 @@ final class TrackerViewController: UIViewController {
             initialSelectedColorIndex: colorIndex,
             initialDescription: oldCard.description,
             initialSelectedDays: oldCard.selectedDays,
+            initialSelectedCategory: oldCard.category,
             cardStore: cardStore
         )
-        
         cardCreationViewController.onSave = { [weak self] (updatedCard: Card, updatedTitle: String) in
             guard let self else { return }
             var newCard = updatedCard
@@ -347,8 +343,8 @@ final class TrackerViewController: UIViewController {
             }
             self.allSections.removeAll { $0.cards.isEmpty }
             
-            if let idx = self.allSections.firstIndex(where: { $0.title == updatedTitle }) {
-                self.allSections[idx].cards.append(newCard)
+            if let index = self.allSections.firstIndex(where: { $0.title == updatedTitle }) {
+                self.allSections[index].cards.append(newCard)
             } else {
                 self.allSections.append(TrackerSection(title: updatedTitle, cards: [newCard]))
             }
@@ -417,7 +413,16 @@ extension TrackerViewController: UICollectionViewDataSource {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? CardCell else {
             return UICollectionViewCell()
         }
-        let card = sections[indexPath.section].cards[indexPath.item]
+        guard indexPath.section < sections.count else {
+            print("\(indexPath.section) выходит за пределы sections.count = \(sections.count)")
+            return UICollectionViewCell()
+        }
+        let cardsInThisSection = sections[indexPath.section].cards
+        guard indexPath.item < cardsInThisSection.count else {
+            print("indexPath.item = \(indexPath.item) выходит за пределы cardsInThisSection.count = \(cardsInThisSection.count)")
+            return UICollectionViewCell()
+        }
+        let card = cardsInThisSection[indexPath.item]
         cell.configure(
             with: card,
             completedRecords: completedRecords,
@@ -456,11 +461,7 @@ extension TrackerViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        guard let view = collectionView.dequeueReusableSupplementaryView(
-            ofKind: kind,
-            withReuseIdentifier: "header",
-            for: indexPath
-        ) as? SupplementaryView else {
+        guard let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? SupplementaryView else {
             return UICollectionReusableView()
         }
         view.titleLabel.text = sections[indexPath.section].title

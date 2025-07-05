@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		029AAD6D2DDF44D500C2E0B2 /* Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		02BEE87B2E159332006755A3 /* Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -46,16 +46,8 @@
 			isa = PBXGroup;
 			children = (
 				029AAD6F2DDF44D500C2E0B2 /* Tracker */,
-				029AAD6E2DDF44D500C2E0B2 /* Products */,
+				02BEE87B2E159332006755A3 /* Tracker.app */,
 			);
-			sourceTree = "<group>";
-		};
-		029AAD6E2DDF44D500C2E0B2 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				029AAD6D2DDF44D500C2E0B2 /* Tracker.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -80,7 +72,7 @@
 			packageProductDependencies = (
 			);
 			productName = Tracker;
-			productReference = 029AAD6D2DDF44D500C2E0B2 /* Tracker.app */;
+			productReference = 02BEE87B2E159332006755A3 /* Tracker.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -108,7 +100,7 @@
 			mainGroup = 029AAD642DDF44D500C2E0B2;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 029AAD6E2DDF44D500C2E0B2 /* Products */;
+			productRefGroup = 029AAD642DDF44D500C2E0B2;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
