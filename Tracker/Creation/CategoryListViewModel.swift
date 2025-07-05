@@ -5,6 +5,7 @@
 //  Created by Ди Di on 30/06/25.
 //
 
+
 final class CategoryListViewModel {
     private let store: TrackerCategoryStore
     var onCategoriesUpdated: (() -> Void)?
@@ -21,8 +22,7 @@ final class CategoryListViewModel {
         fetchCategories()
     }
     
-    func fetchCategories() {
-    }
+    func fetchCategories() {}
     
     func numberOfRows() -> Int {
         return categories.count

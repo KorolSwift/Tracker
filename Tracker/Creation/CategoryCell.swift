@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 final class TrackerCategoryCell: UITableViewCell {
     static let reuseIdentifier = "TrackerCategoryCell"
     
@@ -62,7 +63,6 @@ final class TrackerCategoryCell: UITableViewCell {
             separatorView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             separatorView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             separatorView.heightAnchor.constraint(equalToConstant: 1)
-            
         ])
     }
     
@@ -78,8 +78,7 @@ final class TrackerCategoryCell: UITableViewCell {
 }
 
 extension TrackerCategoryCell: UIContextMenuInteractionDelegate {
-    func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
-                                configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
             return UIMenu(title: "", children: [
                 UIAction(title: "Редактировать") { [weak self] _ in

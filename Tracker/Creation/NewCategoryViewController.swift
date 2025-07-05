@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 final class NewCategoryViewController: UIViewController {
     private let textField: UITextField = {
         let textField = UITextField()
@@ -37,6 +38,7 @@ final class NewCategoryViewController: UIViewController {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

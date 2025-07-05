@@ -10,7 +10,13 @@ import UIKit
 
 final class OnboardingViewController: UIPageViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate {
     
-    lazy var onboardingButton: UIButton = {
+    var onFinish: (() -> Void)?
+    
+    private lazy var pages: [UIViewController] = {
+        return PageModel.allCases.map { OnboardingPageViewController(model: $0) }
+    }()
+    
+    private lazy var onboardingButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Вот это технологии!", for: .normal)
         button.tintColor = .ypWhite
@@ -22,92 +28,23 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         return button
     }()
     
-    lazy var pages: [UIViewController] = {
-        let bluePage = UIViewController()
-        let bluePageLabel: UILabel = {
-            let label = UILabel()
-            label.text = "Отслеживайте только\n то, что хотите"
-            label.textColor = .ypBlack
-            label.font = .sfProDisplayBold32
-            label.textAlignment = .center
-            label.numberOfLines = 2
-            label.translatesAutoresizingMaskIntoConstraints = false
-            return label
-        }()
-        
-        let bluePageImage = UIImageView(image: UIImage(named: "bluePage"))
-        bluePageImage.contentMode = .scaleAspectFit
-        bluePageImage.translatesAutoresizingMaskIntoConstraints = false
-        
-        bluePage.view.addSubview(bluePageImage)
-        bluePage.view.addSubview(bluePageLabel)
-        bluePage.view.addSubview(onboardingButton)
-        
-        NSLayoutConstraint.activate([
-            bluePageImage.topAnchor.constraint(equalTo: bluePage.view.topAnchor),
-            bluePageImage.bottomAnchor.constraint(equalTo: bluePage.view.bottomAnchor),
-            bluePageImage.leadingAnchor.constraint(equalTo: bluePage.view.leadingAnchor),
-            bluePageImage.trailingAnchor.constraint(equalTo: bluePage.view.trailingAnchor),
-            
-            bluePageLabel.leadingAnchor.constraint(equalTo: bluePage.view.leadingAnchor, constant: 16),
-            bluePageLabel.trailingAnchor.constraint(equalTo: bluePage.view.trailingAnchor, constant: -16),
-            bluePageLabel.bottomAnchor.constraint(equalTo: bluePage.view.safeAreaLayoutGuide.bottomAnchor, constant: -270)
-        ])
-        
-        let redPage = UIViewController()
-        let redPageLabel: UILabel = {
-            let label = UILabel()
-            label.text = "Даже если это\n не литры воды и йога"
-            label.textColor = .ypBlack
-            label.font = .sfProDisplayBold32
-            label.textAlignment = .center
-            label.numberOfLines = 2
-            label.translatesAutoresizingMaskIntoConstraints = false
-            return label
-        }()
-        
-        let redPageImage = UIImageView(image: UIImage(named: "redPage"))
-        redPageImage.contentMode = .scaleAspectFit
-        redPageImage.translatesAutoresizingMaskIntoConstraints = false
-        
-        redPage.view.addSubview(redPageImage)
-        redPage.view.addSubview(redPageLabel)
-        redPage.view.addSubview(onboardingButton)
-        
-        NSLayoutConstraint.activate([
-            redPageImage.topAnchor.constraint(equalTo: redPage.view.topAnchor),
-            redPageImage.bottomAnchor.constraint(equalTo: redPage.view.bottomAnchor),
-            redPageImage.leadingAnchor.constraint(equalTo: redPage.view.leadingAnchor),
-            redPageImage.trailingAnchor.constraint(equalTo: redPage.view.trailingAnchor),
-            
-            redPageLabel.leadingAnchor.constraint(equalTo: redPage.view.leadingAnchor, constant: 16),
-            redPageLabel.trailingAnchor.constraint(equalTo: redPage.view.trailingAnchor, constant: -16),
-            redPageLabel.bottomAnchor.constraint(equalTo: redPage.view.safeAreaLayoutGuide.bottomAnchor, constant: -270)
-        ])
-        
-        return [bluePage, redPage]
-    }()
-    
-    lazy var pageControl: UIPageControl = {
-        let pageControl = UIPageControl()
-        pageControl.numberOfPages = pages.count
-        pageControl.currentPage = 0
-        
-        pageControl.currentPageIndicatorTintColor = .ypBlack
-        pageControl.pageIndicatorTintColor = .ypGray
-        
-        pageControl.translatesAutoresizingMaskIntoConstraints = false
-        return pageControl
+    private lazy var pageControl: UIPageControl = {
+        let control = UIPageControl()
+        control.numberOfPages = pages.count
+        control.currentPage = 0
+        control.currentPageIndicatorTintColor = .ypBlack
+        control.pageIndicatorTintColor = .ypGray
+        control.translatesAutoresizingMaskIntoConstraints = false
+        return control
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         delegate = self
         dataSource = self
         
         if let first = pages.first {
-            setViewControllers([first], direction: .forward, animated: true, completion: nil)
+            setViewControllers([first], direction: .forward, animated: true)
         }
         
         view.addSubview(pageControl)
@@ -116,6 +53,7 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         NSLayoutConstraint.activate([
             pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             pageControl.bottomAnchor.constraint(equalTo: onboardingButton.topAnchor, constant: -24),
+            
             onboardingButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
             onboardingButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             onboardingButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -123,39 +61,29 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
         ])
     }
     
-    @objc func didTapOnboardingButton() {
-        UserDefaults.standard.set(true, forKey: "hasSeenOnboarding")
-        let trackerViewController = TrackerViewController()
-        let navigation = UINavigationController(rootViewController: trackerViewController)
-        navigation.modalPresentationStyle = .fullScreen
-        present(navigation, animated: true)
+    @objc private func didTapOnboardingButton() {
+        AppSettings.hasSeenOnboarding = true
+        onFinish?()
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let viewControllerIndex = pages.firstIndex(of: viewController) else { return nil }
-        
-        let previousIndex = viewControllerIndex - 1
-        guard previousIndex >= 0 else {
+        guard let index = pages.firstIndex(of: viewController), index > 0 else {
             return nil
         }
-        return pages[previousIndex]
+        return pages[index - 1]
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let viewControllerIndex = pages.firstIndex(of: viewController) else { return nil }
-        
-        let nextIndex = viewControllerIndex + 1
-        
-        guard nextIndex < pages.count else {
+        guard let index = pages.firstIndex(of: viewController), index < pages.count - 1 else {
             return nil
         }
-        return pages[nextIndex]
+        return pages[index + 1]
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        if let currentViewController = pageViewController.viewControllers?.first,
-           let currentIndex = pages.firstIndex(of: currentViewController) {
-            pageControl.currentPage = currentIndex
+        if let currentVC = viewControllers?.first,
+           let index = pages.firstIndex(of: currentVC) {
+            pageControl.currentPage = index
         }
     }
 }

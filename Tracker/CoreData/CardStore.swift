@@ -24,7 +24,6 @@ final class CardStore {
         entity.colorIndex = Int32(card.colorIndex)
         entity.selectedDays = card.selectedDays as NSObject
         entity.originalSectionTitle = card.originalSectionTitle
-        
         entity.isPinned = card.isPinned
         
         if let category = card.category {
@@ -58,7 +57,6 @@ final class CardStore {
                 else {
                     return nil
                 }
-                
                 let selectedDays = entity.selectedDays as? [String] ?? []
                 let originalSectionTitle = entity.originalSectionTitle ?? ""
                 let isPinned = entity.isPinned
@@ -91,7 +89,6 @@ final class CardStore {
     func save(_ card: Card) {
         let request: NSFetchRequest<CardCoreData> = CardCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", card.id as CVarArg)
-        
         do {
             if let existing = try context.fetch(request).first {
                 existing.emoji = card.emoji

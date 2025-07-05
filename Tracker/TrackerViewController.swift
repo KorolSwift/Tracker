@@ -413,7 +413,15 @@ extension TrackerViewController: UICollectionViewDataSource {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? CardCell else {
             return UICollectionViewCell()
         }
-        let cardsInThisSection = allSections[indexPath.section].cards
+        guard indexPath.section < sections.count else {
+            print("\(indexPath.section) выходит за пределы sections.count = \(sections.count)")
+            return UICollectionViewCell()
+        }
+        let cardsInThisSection = sections[indexPath.section].cards
+        guard indexPath.item < cardsInThisSection.count else {
+            print("indexPath.item = \(indexPath.item) выходит за пределы cardsInThisSection.count = \(cardsInThisSection.count)")
+            return UICollectionViewCell()
+        }
         let card = cardsInThisSection[indexPath.item]
         cell.configure(
             with: card,

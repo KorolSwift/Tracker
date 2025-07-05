@@ -7,13 +7,14 @@
 
 import UIKit
 
+
 final class CategoryViewController: UIViewController {
     private let rowHeight: CGFloat = 75
-    private var tableViewHeightConstraint: NSLayoutConstraint!
+    private var tableViewHeightConstraint: NSLayoutConstraint?
     private let viewModel: TrackerCategoryViewModel
     var initialSelectedCategory: TrackerCategory?
-    var onSave: ((TrackerCategory) -> Void)?
     private var emptyStateView: UIView?
+    var onSelectCategory: ((TrackerCategory) -> Void)?
     
     private lazy var tableView: UITableView = {
         let table = UITableView()
@@ -107,7 +108,7 @@ final class CategoryViewController: UIViewController {
         ])
         
         tableViewHeightConstraint = tableView.heightAnchor.constraint(equalToConstant: 0)
-        tableViewHeightConstraint.isActive = true
+        tableViewHeightConstraint?.isActive = true
         
         categoryContainerView.heightAnchor.constraint(equalTo: tableView.heightAnchor).isActive = true
     }
@@ -126,7 +127,7 @@ final class CategoryViewController: UIViewController {
     private func updateTableHeight() {
         let count = CGFloat(viewModel.categories.count)
         let newHeight = count * rowHeight
-        tableViewHeightConstraint.constant = newHeight
+        tableViewHeightConstraint?.constant = newHeight
         view.layoutIfNeeded()
     }
     
@@ -194,13 +195,18 @@ final class CategoryViewController: UIViewController {
     }
     
     private func presentEditCategoryScreen(for category: TrackerCategory) {
-        let editVC = EditCategoryViewController(category: category)
-        editVC.onSave = { [weak self] newName in
-            self?.viewModel.deleteCategory(category.name)
-            self?.viewModel.addCategory(newName)
+        let editViewController = EditCategoryViewController(category: category)
+        editViewController.onSave = { [weak self] newName in
+            guard let self else { return }
+            self.viewModel.deleteCategory(category.name)
+            do {
+                try self.viewModel.addCategory(newName)
+            } catch {
+                print("Ошибка при добавлении категории: \(error)")
+            }
         }
         if presentedViewController == nil {
-            present(editVC, animated: true)
+            present(editViewController, animated: true)
         }
     }
     
@@ -267,11 +273,13 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(
+        guard let cell = tableView.dequeueReusableCell(
             withIdentifier: TrackerCategoryCell.reuseIdentifier,
             for: indexPath
-        ) as! TrackerCategoryCell
-        
+        ) as? TrackerCategoryCell else {
+            print("Не удалось привести ячейку к TrackerCategoryCell")
+            return UITableViewCell()
+        }
         let sorted = viewModel.categories.sorted {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
@@ -298,9 +306,7 @@ extension CategoryViewController: UITableViewDataSource, UITableViewDelegate {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
         let selected = sorted[indexPath.row]
-        initialSelectedCategory = selected
-        tableView.reloadData()
-        onSave?(selected)
+        onSelectCategory?(selected)
         dismiss(animated: true)
     }
     

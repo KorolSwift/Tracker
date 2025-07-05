@@ -21,7 +21,14 @@ struct Card {
         return CardCreationViewController.colors[colorIndex]
     }
     
-    init(id: UUID = .init(), emoji: String, description: String, colorIndex: Int, selectedDays: [String], originalSectionTitle: String, isPinned: Bool = false, category: TrackerCategory? = nil) {
+    init(id: UUID = .init(),
+         emoji: String,
+         description: String,
+         colorIndex: Int,
+         selectedDays: [String],
+         originalSectionTitle: String,
+         isPinned: Bool = false,
+         category: TrackerCategory? = nil) {
         self.id = id
         self.emoji = emoji
         self.description = description

@@ -23,9 +23,14 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
             cacheName: nil
         )
         controller.delegate = self
-        try? controller.performFetch()
+        do {
+            try controller.performFetch()
+        } catch {
+            print("Ошибка performFetch() в TrackerStore: \(error.localizedDescription)")
+        }
         return controller
     }()
+    
     init(context: NSManagedObjectContext) {
         self.context = context
         super.init()

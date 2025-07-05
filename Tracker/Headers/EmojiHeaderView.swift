@@ -28,6 +28,7 @@ final class EmojiHeaderView: UICollectionReusableView {
             title.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
+    
     required init?(coder: NSCoder) {
         fatalError()
     }

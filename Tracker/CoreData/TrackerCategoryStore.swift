@@ -23,7 +23,11 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
             cacheName: nil
         )
         controller.delegate = self
-        try? controller.performFetch()
+        do {
+            try controller.performFetch()
+        } catch {
+            print("Ошибка при выполнении performFetch в TrackerCategoryStore: \(error)")
+        }
         return controller
     }()
     

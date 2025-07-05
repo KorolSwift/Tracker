@@ -9,8 +9,6 @@ import UIKit
 
 
 final class ScheduleViewController: UIViewController {
-    
-    
     private let scheduleTitle: UILabel = {
         let title = UILabel()
         title.textColor = .ypBlack
