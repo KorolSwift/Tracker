@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 
 final class CardCreationViewController: UIViewController {
@@ -13,6 +14,7 @@ final class CardCreationViewController: UIViewController {
         case habit
         case irregularEvent
     }
+    
     private let mode: Mode
     private let existingCardId: UUID?
     
@@ -75,8 +77,23 @@ final class CardCreationViewController: UIViewController {
         let button = ChevronButton()
         button.setTitle(Constants.CardCreation.categoryButtonTitle)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(categoryButtonTapped), for: .touchUpInside)
         return button
     }()
+    
+    private var currentSelectedCategory: TrackerCategory?
+    private let initialSelectedCategory: TrackerCategory?
+    
+    lazy var categoryStore: TrackerCategoryStore = {
+        guard let context = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext else {
+            print("Не удалось получить context — будет пустой store")
+            return TrackerCategoryStore(context: NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType))
+        }
+        return TrackerCategoryStore(context: context)
+    }()
+    
+    private lazy var categoryViewModel = TrackerCategoryViewModel(store: categoryStore)
+    
     
     private lazy var scheduleButton: ChevronButton = {
         let button = ChevronButton()
@@ -145,8 +162,8 @@ final class CardCreationViewController: UIViewController {
     private var selectedEmoji: String = ""
     private var selectedColor: UIColor = .ypBlue
     private var isScheduleSelected: Bool = false
-    private var buttonsContainerTopToDescConstraint: NSLayoutConstraint!
-    private var buttonsContainerTopToErrorConstraint: NSLayoutConstraint!
+    private var buttonsContainerTopToDescConstraint: NSLayoutConstraint?
+    private var buttonsContainerTopToErrorConstraint: NSLayoutConstraint?
     
     private let emojiHeaderView = EmojiHeaderView()
     private let colorHeaderView = ColorHeaderView()
@@ -206,21 +223,22 @@ final class CardCreationViewController: UIViewController {
     var initialEmojiIndex: IndexPath?
     var initialColorIndex: IndexPath?
     
-    init(
-        mode: Mode,
-        existingCardId: UUID? = nil,
-        initialSelectedEmojiIndex: IndexPath? = nil,
-        initialSelectedColorIndex: IndexPath? = nil,
-        initialDescription: String? = nil,
-        initialSelectedDays: [String]? = nil,
-        cardStore: CardStore
-    ) {
+    init(mode: Mode,
+         existingCardId: UUID? = nil,
+         initialSelectedEmojiIndex: IndexPath? = nil,
+         initialSelectedColorIndex: IndexPath? = nil,
+         initialDescription: String? = nil,
+         initialSelectedDays: [String]? = nil,
+         initialSelectedCategory: TrackerCategory? = nil,
+         cardStore: CardStore) {
         self.mode = mode
         self.existingCardId = existingCardId
         self.initialEmojiIndex = initialSelectedEmojiIndex
         self.initialColorIndex = initialSelectedColorIndex
         self.initialDescription = initialDescription
         self.initialSelectedDays = initialSelectedDays
+        self.initialSelectedCategory = initialSelectedCategory
+        self.currentSelectedCategory = initialSelectedCategory
         self.cardStore = cardStore
         super.init(nibName: nil, bundle: nil)
     }
@@ -282,7 +300,7 @@ final class CardCreationViewController: UIViewController {
         contentView.addSubview(emojiCollectionView)
         contentView.addSubview(colorCollectionView)
         
-        setupConstraints()
+        setupLayout()
         
         emojiCollectionView.reloadData()
         colorCollectionView.reloadData()
@@ -306,13 +324,20 @@ final class CardCreationViewController: UIViewController {
             selectedColor = CardCreationViewController.colors[colorIndex.item]
             colorCollectionView.selectItem(at: colorIndex, animated: false, scrollPosition: [])
         }
+        if let selected = currentSelectedCategory {
+            updateCategoryButtonTitle(from: selected)
+        }
+        if let category = initialSelectedCategory {
+            currentSelectedCategory = category
+            updateCategoryButtonTitle(from: category)
+        }
     }
     
-    private func setupConstraints() {
+    private func setupLayout() {
         buttonsContainerTopToDescConstraint = buttonsContainer.topAnchor.constraint(equalTo: descriptionTextView.bottomAnchor, constant: 24)
         buttonsContainerTopToErrorConstraint = buttonsContainer.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24)
-        buttonsContainerTopToDescConstraint.isActive = true
-        buttonsContainerTopToErrorConstraint.isActive = false
+        buttonsContainerTopToDescConstraint?.isActive = true
+        buttonsContainerTopToErrorConstraint?.isActive = false
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 27),
@@ -390,6 +415,9 @@ final class CardCreationViewController: UIViewController {
                 categoryButton.bottomAnchor.constraint(equalTo: buttonsContainer.bottomAnchor)
             ])
         }
+        if let category = currentSelectedCategory {
+            categoryButton.setTitle(category.name)
+        }
     }
     
     @objc private func didTapClear() {
@@ -402,11 +430,11 @@ final class CardCreationViewController: UIViewController {
     
     private func showErrorLabel(_ show: Bool) {
         if show {
-            buttonsContainerTopToDescConstraint.isActive = false
-            buttonsContainerTopToErrorConstraint.isActive = true
+            buttonsContainerTopToDescConstraint?.isActive = false
+            buttonsContainerTopToErrorConstraint?.isActive = true
         } else {
-            buttonsContainerTopToErrorConstraint.isActive = false
-            buttonsContainerTopToDescConstraint.isActive = true
+            buttonsContainerTopToErrorConstraint?.isActive = false
+            buttonsContainerTopToDescConstraint?.isActive = true
         }
         UIView.animate(withDuration: 0.1) {
             self.view.layoutIfNeeded()
@@ -419,6 +447,7 @@ final class CardCreationViewController: UIViewController {
     }
     
     @objc private func createButtonTapped() {
+        let categoryTitle = currentSelectedCategory?.name ?? ""
         let index = selectedColorIndex?.item ?? 0
         let card = Card(
             id: existingCardId ?? UUID(),
@@ -426,17 +455,17 @@ final class CardCreationViewController: UIViewController {
             description: descriptionTextView.text ?? "",
             colorIndex: index,
             selectedDays: currentSelectedDays,
-            originalSectionTitle: categoryButton.currentTitle ?? ""
+            originalSectionTitle: categoryTitle,
+            isPinned: false,
+            category: currentSelectedCategory
         )
-        cardStore.save(card)
-        onSave?(card, categoryButton.currentTitle ?? "")
+        onSave?(card, card.originalSectionTitle)
         dismiss(animated: true)
     }
     
     @objc private func scheduleButtonTapped() {
         let scheduleViewController = ScheduleViewController()
         scheduleViewController.initialSelectedDays = currentSelectedDays
-        
         scheduleViewController.onSave = { [weak self] selectedDays in
             guard let self = self else { return }
             guard !selectedDays.isEmpty else { return }
@@ -456,7 +485,7 @@ final class CardCreationViewController: UIViewController {
             return
         }
         let full: String = days.count == 7
-        ? "Расписание\nКаждый день"
+        ? "Расписание\nКаждыйвот  день"
         : "Расписание\n" + days.map { dayAbbreviations[$0]! }.joined(separator: ", ")
         let attr = NSMutableAttributedString(string: full)
         let headerRange = (full as NSString).range(of: "Расписание")
@@ -464,6 +493,33 @@ final class CardCreationViewController: UIViewController {
         attr.addAttribute(.foregroundColor, value: UIColor.ypBlack, range: headerRange)
         attr.addAttribute(.foregroundColor, value: UIColor.ypGray,  range: bodyRange)
         scheduleButton.setAttributedTitle(attr)
+    }
+    
+    @objc private func categoryButtonTapped() {
+        let categoryViewController = CategoryViewController(viewModel: categoryViewModel)
+        categoryViewController.initialSelectedCategory = currentSelectedCategory
+        categoryViewController.onSelectCategory = { [weak self] selectedCategory in
+            guard let self = self else { return }
+            guard !selectedCategory.name.isEmpty else { return }
+            self.currentSelectedCategory = selectedCategory
+            self.updateCategoryButtonTitle(from: selectedCategory)
+            self.updateSaveButtonState()
+            self.dismiss(animated: true)
+        }
+        let navigation = UINavigationController(rootViewController: categoryViewController)
+        present(navigation, animated: true)
+    }
+    
+    private func updateCategoryButtonTitle(from category: TrackerCategory) {
+        let title = "Категория\n" + category.name
+        let attribute = NSMutableAttributedString(string: title)
+        
+        let headerRange = (title as NSString).range(of: "Категория")
+        let bodyRange = NSRange(location: headerRange.length + 1, length: title.count - headerRange.length - 1)
+        
+        attribute.addAttribute(.foregroundColor, value: UIColor.ypBlack, range: headerRange)
+        attribute.addAttribute(.foregroundColor, value: UIColor.ypGray, range: bodyRange)
+        categoryButton.setAttributedTitle(attribute)
     }
     
     @objc private func textFieldChanged() {
@@ -482,6 +538,7 @@ final class CardCreationViewController: UIViewController {
         saveButton.isEnabled = canCreate
         saveButton.backgroundColor = canCreate ? .ypBlack : .ypGray
     }
+    
     @objc private func cancellButtonTapped() {
         dismiss(animated: true)
     }

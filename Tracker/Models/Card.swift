@@ -16,11 +16,19 @@ struct Card {
     let selectedDays: [String]
     var originalSectionTitle: String
     var isPinned: Bool
+    let category: TrackerCategory?
     var color: UIColor {
         return CardCreationViewController.colors[colorIndex]
     }
     
-    init(id: UUID = .init(), emoji: String, description: String, colorIndex: Int, selectedDays: [String], originalSectionTitle: String, isPinned: Bool = false) {
+    init(id: UUID = .init(),
+         emoji: String,
+         description: String,
+         colorIndex: Int,
+         selectedDays: [String],
+         originalSectionTitle: String,
+         isPinned: Bool = false,
+         category: TrackerCategory? = nil) {
         self.id = id
         self.emoji = emoji
         self.description = description
@@ -28,5 +36,6 @@ struct Card {
         self.selectedDays = selectedDays
         self.originalSectionTitle = originalSectionTitle
         self.isPinned = isPinned
+        self.category = category
     }
 }

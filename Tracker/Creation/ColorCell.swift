@@ -32,7 +32,9 @@ final class ColorCell: UICollectionViewCell {
         contentView.layer.masksToBounds = true
     }
     
-    required init?(coder: NSCoder) { fatalError() }
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
     
     override var isSelected: Bool {
         didSet {

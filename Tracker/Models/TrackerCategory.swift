@@ -7,6 +7,6 @@
 
 
 struct TrackerCategory {
-    let title: String
-    let trackers: [Tracker]
+    let name: String
+    var trackers: [Card]
 }
