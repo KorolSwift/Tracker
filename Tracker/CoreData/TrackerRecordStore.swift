@@ -7,12 +7,15 @@
 
 import Foundation
 import CoreData
+import UIKit
 
 
 final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
     weak var delegate: StoreDelegateProtocol?
     private let context: NSManagedObjectContext
-    
+    static let shared = TrackerRecordStore(
+        context: (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    )
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData> = {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
@@ -96,4 +99,16 @@ final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
             return TrackerRecord(trackerId: id, date: date)
         }
     }
+    
+    func getAllRecords() -> [TrackerRecord] {
+        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        do {
+            let results = try context.fetch(fetchRequest)
+            return results.compactMap { $0.toTrackerRecord() }
+        } catch {
+            print("Ошибка получения записей: \(error.localizedDescription)")
+            return []
+        }
+    }
 }
+

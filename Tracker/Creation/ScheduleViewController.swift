@@ -19,8 +19,8 @@ final class ScheduleViewController: UIViewController {
     }()
     
     private let daysOfWeek = [
-        "Понедельник", "Вторник", "Среда",
-        "Четверг", "Пятница", "Суббота", "Воскресенье"
+        "monday", "tuesday", "wednesday",
+        "thursday", "friday", "saturday", "sunday"
     ]
     
     var initialSelectedDays: [String] = []
@@ -48,7 +48,7 @@ final class ScheduleViewController: UIViewController {
     
     private let doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(NSLocalizedString("done_button", comment: ""), for: .normal)
         button.titleLabel?.font = .sfProDisplayMedium16
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = UIColor.ypBlack
@@ -125,7 +125,8 @@ extension ScheduleViewController: UITableViewDataSource {
         }
         let dayName = daysOfWeek[indexPath.row]
         let isOn = togglesState[indexPath.row]
-        cell.configure(dayName: dayName, isOn: isOn)
+        let localizedDay = NSLocalizedString(dayName, comment: "")
+        cell.configure(dayName: localizedDay, isOn: isOn)
         let isLast = (indexPath.row == daysOfWeek.count - 1)
         cell.hideSeparator(isLast)
         cell.toggleSwitch.tag = indexPath.row

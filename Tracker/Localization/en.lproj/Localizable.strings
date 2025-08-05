@@ -1,0 +1,79 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Ди Di on 11/07/25.
+  
+*/
+
+"blue_onboarding" = "Track only what you want";
+"red_onboarding" = "Even if it's not liters of water and yoga";
+"onboarding_button" = "That's technology!";
+
+"empty_main_screen" = "What are we going to track?";
+"empty_staristics_screen" = "There is nothing to analyze yet";
+"filters" = "Filters";
+"nothing_found" = "Nothing found";
+"empty_category" = "Habits and events can be\ncombined by meaning";
+"delete_tracker_confirmation" = "Are you sure you want to delete the tracker?";
+"delete_category_confirmation" = "Are you sure you don't need this category?";
+
+"statistics_title" = "Statistics";
+"completed_trackers" = "Trackers completed";
+"search_ph" = "Search";
+
+"trackers_title" = "Trackers";
+"creation_tracker_title" = "Creating a tracker";
+"habit_button" = "Habit";
+"irregular_event_button" = "Irregular event";
+
+"new_habit_title" = "New habit";
+"enter_tracker_name_ph" = "Enter Tracker Name";
+"category" = "Category";
+"category_title_prefix" = "Category\n";
+"schedule" = "Schedule";
+"schedule_every_day" = "Schedule\nEvery day";
+"schedule_some_days" = "Schedule\n%@";
+"emoji_title" = "Emoji";
+"color_title" = "Color";
+"create_button" = "Create";
+"cancel_button" = "Cancel";
+
+"new_irregular_event" = "New Irregular Event";
+"category_title" = "Category";
+"add_category_button" = "Add Category";
+"new_category_title" = "New Category";
+"category_editing" = "Editing a category";
+"enter_category_name_ph" = "Enter Category Name";
+"done_button" = "Done";
+
+"pin_button" = "Pin";
+"unpin_button" = "Unpin";
+"edit_button" = "Edit";
+"delete_button" = "Delete";
+
+"pinned_title" = "Pinned";
+
+"error" = "Error";
+"can't_mark_future_date" = "You can't mark a card for a future date";
+"ok_button" = "OK";
+
+"character_limit" = "38 character limit";
+
+"monday" = "Monday";
+"tuesday" = "Tuesday";
+"wednesday" = "Wednesday";
+"thursday" = "Thursday";
+"friday" = "Friday";
+"saturday" = "Saturday";
+"sunday" = "Sunday";
+
+"monday_short" = "Mon";
+"tuesday_short" = "Tue";
+"wednesday_short" = "Wed";
+"thursday_short" = "Thu";
+"friday_short" = "Fri";
+"saturday_short" = "Sat";
+"sunday_short" = "Sun";
+
+"numberOfDays" = "%d day(s)";

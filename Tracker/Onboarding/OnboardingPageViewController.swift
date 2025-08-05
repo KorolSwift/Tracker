@@ -24,9 +24,9 @@ enum PageModel: CaseIterable {
     var text: String {
         switch self {
         case .first:
-            return "Отслеживайте только\n то, что хотите"
+            return NSLocalizedString("blue_onboarding", comment: "")
         case .second:
-            return "Даже если это\n не литры воды и йога"
+            return NSLocalizedString("red_onboarding", comment: "")
         }
     }
 }

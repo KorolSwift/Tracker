@@ -5,27 +5,29 @@
 //  Created by Ди Di on 10/06/25.
 //
 
+import Foundation
+
 
 enum Constants {
     enum Schedule {
-        static let scheduleTitle = "Расписание"
+        static let scheduleTitle = NSLocalizedString("schedule", comment: "")
     }
     enum Category {
-        static let categoryTitle = "Категория"
+        static let categoryTitle = NSLocalizedString("category", comment: "")
     }
     
     enum CardCreation {
-        static let errorLabel = "Ограничение 38 символов"
-        static let titleLabel = "Новая привычка"
-        static let descriptionTextView = "Введите название трекера"
-        static let categoryButtonTitle = "Категория"
-        static let scheduleButtonTitle = "Расписание"
-        static let saveButtonTitle = "Создать"
-        static let cancelButtonTitle = "Отменить"
-        static let didTapClearTitle = "Введите название трекера"
-        static let trackerCreationTitle = "Создание трекера"
-        static let irregularEventButtonTitle = "Нерегулярное событие"
-        static let habitButtonTitle = "Привычка"
-        static let addCategoryButtonTitle = "Добавить категорию"
+        static var errorLabel = NSLocalizedString("character_limit", comment: "")
+        static var titleLabel = NSLocalizedString("new_habit_title", comment: "")
+        static var descriptionTextView = NSLocalizedString("enter_tracker_name_ph", comment: "")
+        static var categoryButtonTitle = NSLocalizedString("category", comment: "")
+        static var scheduleButtonTitle = NSLocalizedString("schedule", comment: "")
+        static var saveButtonTitle = NSLocalizedString("create_button", comment: "")
+        static var cancelButtonTitle = NSLocalizedString("cancel_button", comment: "")
+        static var didTapClearTitle = NSLocalizedString("enter_tracker_name_ph", comment: "")
+        static var trackerCreationTitle = NSLocalizedString("creation_tracker_title", comment: "")
+        static var irregularEventButtonTitle = NSLocalizedString("irregular_event_button", comment: "")
+        static var habitButtonTitle = NSLocalizedString("habit_button", comment: "")
+        static var addCategoryButtonTitle = NSLocalizedString("add_category_button", comment: "")
     }
 }
