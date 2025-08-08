@@ -18,7 +18,7 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
     
     private lazy var onboardingButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Вот это технологии!", for: .normal)
+        button.setTitle(NSLocalizedString("onboarding_button", comment: ""), for: .normal)
         button.tintColor = .ypWhite
         button.titleLabel?.font = .sfProDisplayMedium16
         button.translatesAutoresizingMaskIntoConstraints = false

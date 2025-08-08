@@ -81,10 +81,10 @@ extension TrackerCategoryCell: UIContextMenuInteractionDelegate {
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
             return UIMenu(title: "", children: [
-                UIAction(title: "Редактировать") { [weak self] _ in
+                UIAction(title: NSLocalizedString("edit_button", comment: "")) { [weak self] _ in
                     self?.onEdit?()
                 },
-                UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
+                UIAction(title: NSLocalizedString("delete_button", comment: ""), attributes: .destructive) { [weak self] _ in
                     self?.onDelete?()
                 }
             ])

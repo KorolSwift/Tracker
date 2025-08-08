@@ -14,7 +14,7 @@ final class EditCategoryViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Редактирование категории"
+        label.text = NSLocalizedString("category_editing", comment: "")
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.textColor = .label
@@ -25,7 +25,7 @@ final class EditCategoryViewController: UIViewController {
     private lazy var textField: UITextField = {
         let tf = UITextField()
         tf.text = category.name
-        tf.placeholder = "Введите название категории"
+        tf.placeholder = NSLocalizedString("enter_category_name_ph", comment: "")
         tf.clearButtonMode = .whileEditing
         tf.font = .systemFont(ofSize: 17)
         tf.translatesAutoresizingMaskIntoConstraints = false
@@ -42,7 +42,7 @@ final class EditCategoryViewController: UIViewController {
     
     private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(NSLocalizedString("done_button", comment: ""), for: .normal)
         button.backgroundColor = .ypBlack
         button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 17, weight: .medium)

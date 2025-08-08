@@ -146,11 +146,11 @@ final class CategoryViewController: UIViewController {
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
         
-        let imageView = UIImageView(image: UIImage(named: "Error"))
+        let imageView = UIImageView(image: UIImage(resource: .error))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
         let label = UILabel()
-        label.text = "Привычки и события можно\nобъединить по смыслу"
+        label.text = NSLocalizedString("empty_category", comment: "Описание при отсуствии категорий")
         label.textColor = .ypBlack
         label.font = .sfProDisplayMedium12
         label.numberOfLines = 0
@@ -213,13 +213,13 @@ final class CategoryViewController: UIViewController {
     private func showDeleteConfirmation(for category: TrackerCategory) {
         let alert = UIAlertController(
             title: nil,
-            message: "Эта категория точно не нужна?",
+            message: NSLocalizedString("delete_category_confirmation", comment: ""),
             preferredStyle: .actionSheet
         )
-        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+        let deleteAction = UIAlertAction(title: NSLocalizedString("ok_button", comment: ""), style: .destructive) { [weak self] _ in
             self?.viewModel.deleteCategory(category.name)
         }
-        let cancelAction = UIAlertAction(title: "Отменить", style: .cancel)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("cancel_button", comment: ""), style: .cancel)
         
         alert.addAction(deleteAction)
         alert.addAction(cancelAction)
@@ -245,10 +245,10 @@ extension CategoryViewController: UIContextMenuInteractionDelegate {
             previewProvider: nil,
             actionProvider: { _ in
                 UIMenu(title: "", children: [
-                    UIAction(title: "Редактировать") { [weak self] _ in
+                    UIAction(title: NSLocalizedString("edit_button", comment: "")) { [weak self] _ in
                         self?.presentEditCategoryScreen(for: category)
                     },
-                    UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
+                    UIAction(title: NSLocalizedString("cancel_button", comment: ""), attributes: .destructive) { [weak self] _ in
                         self?.showDeleteConfirmation(for: category)
                     }
                 ])

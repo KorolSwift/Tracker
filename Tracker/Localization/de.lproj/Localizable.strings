@@ -1,0 +1,79 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Ди Di on 11/07/25.
+  
+*/
+
+"blue_onboarding" = "Tracke nur, was du willst";
+"red_onboarding" = "Auch wenn es nicht Liter Wasser und Yoga sind";
+"onboarding_button" = "Das ist Technologie!";
+
+"empty_main_screen" = "Was soll erfasst werden?";
+"empty_statistics_screen" = "Es gibt noch nichts zu analysieren"; 
+"filters" = "Filter";
+"nothing_found" = "Nichts gefunden";
+"empty_category" = "Gewohnheiten und Ereignisse können nach Bedeutung kombiniert werden";
+"delete_tracker_confirmation" = "Möchten Sie den Tracker wirklich löschen?";
+"delete_category_confirmation" = "Brauchen Sie diese Kategorie wirklich nicht?";
+
+"statistics_title" = "Statistiken";
+"completed_trackers" = "Tracker abgeschlossen";
+"search_ph" = "Suchen";
+
+"trackers_title" = "Tracker";
+"creation_tracker_title" = "Tracker erstellen";
+"habit_button" = "Gewohnheit";
+"irregular_event_button" = "Unregelmäßiges Ereignis";
+
+"new_habit_title" = "Neue Gewohnheit";
+"enter_tracker_name_ph" = "Tracker-Name eingeben";
+"category" = "Kategorie";
+"category_title_prefix" = "Kategorie\n";
+"schedule" = "Zeitplan";
+"schedule_every_day" = "Zeitplan\nTäglich";
+"schedule_some_days" = "Zeitplan\n%@";
+"emoji_title" = "Emoji";
+"color_title" = "Farbe";
+"create_button" = "Erstellen";
+"cancel_button" = "Abbrechen";
+
+"new_irregular_event" = "Neues unregelmäßiges Ereignis";
+"category_title" = "Kategorie";
+"add_category_button" = "Kategorie hinzufügen";
+"new_category_title" = "Neue Kategorie";
+"category_editing" = "Bearbeiten einer Kategorie";
+"enter_category_name_ph" = "Kategorienamen eingeben";
+"done_button" = "Fertig";
+
+"pin_button" = "Anheften";
+"unpin_button" = "Lösen";
+"edit_button" = "Bearbeiten";
+"delete_button" = "Löschen";
+
+"pinned_title" = "Angepinnt";
+
+"error" = "Fehler";
+"can't_mark_future_date" = "Sie können eine Karte nicht für ein zukünftiges Datum markieren";
+"ok_button" = "OK";
+
+"character_limit" = "38 Zeichenbegrenzung";
+
+"monday" = "Montag";
+"tuesday" = "Dienstag";
+"wednesday" = "Mittwoch";
+"thursday" = "Donnerstag";
+"friday" = "Freitag";
+"saturday" = "Samstag";
+"sunday" = "Sonntag";
+
+"monday_short" = "Mo";
+"tuesday_short" = "Di";
+"wednesday_short" = "Mi";
+"thursday_short" = "Do";
+"friday_short" = "Fr";
+"saturday_short" = "Sa";
+"sunday_short" = "So";
+
+"numberOfDays" = "%d Tag(e)";

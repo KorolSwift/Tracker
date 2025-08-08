@@ -11,7 +11,7 @@ import UIKit
 final class NewCategoryViewController: UIViewController {
     private let textField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название категории"
+        textField.placeholder = NSLocalizedString("enter_category_name_ph", comment: "")
         textField.backgroundColor = .ypDoubleLightGray
         textField.layer.cornerRadius = 16
         textField.font = .sfProDisplayRegular17
@@ -22,7 +22,7 @@ final class NewCategoryViewController: UIViewController {
     
     private let saveButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(NSLocalizedString("done_button", comment: ""), for: .normal)
         button.setTitleColor(.ypWhite, for: .normal)
         button.backgroundColor = .ypGray
         button.titleLabel?.font = .sfProDisplayMedium16
@@ -46,7 +46,7 @@ final class NewCategoryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .ypWhite
-        title = "Новая категория"
+        title = NSLocalizedString("new_category_title", comment: "")
         navigationController?.navigationBar.prefersLargeTitles = false
         setupLayout()
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)

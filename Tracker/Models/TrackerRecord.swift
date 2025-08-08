@@ -28,3 +28,13 @@ extension Date {
         return calendar.date(from: comps) ?? self
     }
 }
+
+extension TrackerRecordCoreData {
+    func toTrackerRecord() -> TrackerRecord? {
+        guard let trackerId = self.trackerId,
+              let date = self.date else {
+            return nil
+        }
+        return TrackerRecord(trackerId: trackerId, date: date)
+    }
+}

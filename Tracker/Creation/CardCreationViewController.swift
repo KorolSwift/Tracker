@@ -44,7 +44,7 @@ final class CardCreationViewController: UIViewController {
     
     private lazy var clearButton: UIButton = {
         let button = UIButton(type: .system)
-        let image = UIImage(named: "delete_icon")
+        let image = UIImage(resource: .deleteIcon)
         button.setImage(image, for: .normal)
         button.tintColor = .ypGray
         button.imageView?.contentMode = .scaleAspectFit
@@ -109,16 +109,10 @@ final class CardCreationViewController: UIViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
-    private let dayAbbreviations: [String: String] = [
-        "Понедельник": "Пн",
-        "Вторник":     "Вт",
-        "Среда":       "Ср",
-        "Четверг":     "Чт",
-        "Пятница":     "Пт",
-        "Суббота":     "Сб",
-        "Воскресенье": "Вс"
-    ]
+
+    private func shortName(for fullName: String) -> String {
+        Localized.Weekday.shortName(for: fullName)
+    }
     
     private var currentSelectedDays: [String] = []
     
@@ -252,8 +246,8 @@ final class CardCreationViewController: UIViewController {
         view.backgroundColor = .ypWhite
         
         switch mode {
-        case .habit: titleLabel.text = "Новая привычка"
-        case .irregularEvent: titleLabel.text = "Новое нерегулярное событие"
+        case .habit: titleLabel.text = NSLocalizedString("new_habit_title", comment: "")
+        case .irregularEvent: titleLabel.text = NSLocalizedString("new_irregular_event", comment: "")
         }
         
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -484,14 +478,21 @@ final class CardCreationViewController: UIViewController {
             scheduleButton.setTitleColor(.ypBlack)
             return
         }
-        let full: String = days.count == 7
-        ? "Расписание\nКаждыйвот  день"
-        : "Расписание\n" + days.map { dayAbbreviations[$0]! }.joined(separator: ", ")
+        
+        let scheduleTitle = NSLocalizedString("schedule", comment: "")
+        
+        let full = "\(NSLocalizedString("schedule", comment: ""))\n" +
+        (days.count == 7
+         ? NSLocalizedString("every_day", comment: "")
+         : days.map { NSLocalizedString("\($0)_short", comment: "") }.joined(separator: ", "))
         let attr = NSMutableAttributedString(string: full)
-        let headerRange = (full as NSString).range(of: "Расписание")
-        let bodyRange = NSRange(location: headerRange.length+1, length: full.count - headerRange.length - 1)
+        
+        let headerRange = (full as NSString).range(of: scheduleTitle)
+        let bodyRange = NSRange(location: headerRange.length + 1, length: full.count - headerRange.length - 1)
+        
         attr.addAttribute(.foregroundColor, value: UIColor.ypBlack, range: headerRange)
         attr.addAttribute(.foregroundColor, value: UIColor.ypGray,  range: bodyRange)
+        
         scheduleButton.setAttributedTitle(attr)
     }
     
@@ -511,10 +512,12 @@ final class CardCreationViewController: UIViewController {
     }
     
     private func updateCategoryButtonTitle(from category: TrackerCategory) {
-        let title = "Категория\n" + category.name
+        let prefix = NSLocalizedString("category_title_prefix", comment: "Prefix for category title with newline")
+        let title = prefix + category.name
         let attribute = NSMutableAttributedString(string: title)
         
-        let headerRange = (title as NSString).range(of: "Категория")
+        let headerTitle = NSLocalizedString("category", comment: "")
+        let headerRange = (title as NSString).range(of: headerTitle)
         let bodyRange = NSRange(location: headerRange.length + 1, length: title.count - headerRange.length - 1)
         
         attribute.addAttribute(.foregroundColor, value: UIColor.ypBlack, range: headerRange)
@@ -560,7 +563,7 @@ extension CardCreationViewController: UITextViewDelegate {
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
-        if textView.text == "Введите название трекера" {
+        if textView.text == NSLocalizedString("enter_tracker_name_ph", comment: "") {
             textView.text = ""
             textView.textColor = .ypBlack
         }
@@ -568,7 +571,7 @@ extension CardCreationViewController: UITextViewDelegate {
     
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView.text.trimmingCharacters(in: .whitespaces).isEmpty {
-            textView.text = "Введите название трекера"
+            textView.text = NSLocalizedString("enter_tracker_name_ph", comment: "")
             textView.textColor = .ypGray
             errorLabel.isHidden = true
         }
@@ -650,7 +653,7 @@ extension CardCreationViewController: UICollectionViewDataSource, UICollectionVi
                 assertionFailure("Не удалось получить ColorHeaderView")
                 return UICollectionReusableView()
             }
-            header.title.text = "Цвет"
+            header.title.text = NSLocalizedString("color_title", comment: "")
             return header
         }
     }

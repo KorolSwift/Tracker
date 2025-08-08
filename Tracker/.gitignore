@@ -1,0 +1,52 @@
+//
+//  .gitignore
+//  Tracker
+//
+//  Created by Ди Di on 08/08/25.
+//
+
+# --- Служебные файлы и папки macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# --- Временные и лог-файлы ---
+*.swp
+*.swo
+*.tmp
+*.lock
+*.bak
+*.orig
+
+# --- Xcode project workspace/user data ---
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.xcuserdatad
+*.xcscmblueprint
+
+# --- Xcode build ---
+DerivedData/
+build/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# --- Swift Package Manager ---
+.build/
+.swiftpm/
+Package.resolved
+
+# --- Snapshot testing ---
+__Snapshots__/
+
+# --- Git-папка (не игнорируй, если работаешь с репозиторием) ---
+# .git/
+
+# --- Архивы и копии ---
+*.zip

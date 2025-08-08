@@ -30,16 +30,16 @@ final class TabBarViewController: UITabBarController {
         let trackerViewController = TrackerViewController()
         let trackerNavigation = UINavigationController(rootViewController: trackerViewController)
         trackerNavigation.tabBarItem = UITabBarItem(
-            title: "Трекеры",
-            image: UIImage(named: "tab_trackers_not_active")?.withRenderingMode(.alwaysOriginal),
+            title: NSLocalizedString("trackers_title", comment: ""),
+            image: UIImage(resource: .tabTrackersNotActive).withRenderingMode(.alwaysOriginal),
             selectedImage: UIImage(named: "tab_trackers_not_active")
         )
         
-        let staticticViewController = StaticticViewController()
+        let staticticViewController = StatisticViewController()
         let staticticNavigation = UINavigationController(rootViewController: staticticViewController)
         staticticNavigation.tabBarItem = UITabBarItem(
-            title: "Статистика",
-            image: UIImage(named: "tab_statistic_not_active")?.withRenderingMode(.alwaysOriginal),
+            title: NSLocalizedString("statistics_title", comment: ""),
+            image: UIImage(resource: .tabStatisticNotActive).withRenderingMode(.alwaysOriginal),
             selectedImage: UIImage(named: "tab_statistic_not_active")
         )
         viewControllers = [trackerNavigation, staticticNavigation]

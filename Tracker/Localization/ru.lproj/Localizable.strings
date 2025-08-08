@@ -1,0 +1,79 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Ди Di on 11/07/25.
+  
+*/
+
+"blue_onboarding" = "Отслеживайте только\n то, что хотите";
+"red_onboarding" = "Даже если это\n не литры воды и йога";
+"onboarding_button" = "Вот это технологии!";
+
+"empty_main_screen" = "Что будем отслеживать?";
+"empty_statistics_screen" = "Анализировать пока нечего"; 
+"filters" = "Фильтры";
+"nothing_found" = "Ничего не найдено";
+"empty_category" = "Привычки и события можно\nобъединить по смыслу";
+"delete_tracker_confirmation" = "Уверены, что хотите удалить трекер?";
+"delete_category_confirmation" = "Эта категория точно не нужна?";
+
+"statistics_title" = "Статистика";
+"completed_trackers" = "Трекеров завершено";
+"search_ph" = "Поиск";
+
+"trackers_title" = "Трекеры";
+"creation_tracker_title" = "Создание трекера";
+"habit_button" = "Привычка";
+"irregular_event_button" = "Нерегулярное событие";
+
+"new_habit_title" = "Новая привычка";
+"enter_tracker_name_ph" = "Введите название трекера";
+"category" = "Категория";
+"category_title_prefix" = "Категория\n";
+"schedule" = "Расписание";
+"schedule_every_day" = "Расписание\nКаждый день";
+"schedule_some_days" = "Расписание\n%@";
+"emoji_title" = "Emoji";
+"color_title" = "Цвет";
+"create_button" = "Создать";
+"cancel_button" = "Отменить";
+
+"new_irregular_event" = "Новое нерегулярное событие";
+"category_title" = "Категория";
+"add_category_button" = "Добавить категорию";
+"new_category_title" = "Новая категория";
+"category_editing" = "Редактирование категории";
+"enter_category_name_ph" = "Введите название категории";
+"done_button" = "Готово";
+
+"pin_button" = "Закрепить";
+"unpin_button" = "Открепить";
+"edit_button" = "Редактировать";
+"delete_button" = "Удалить";
+
+"pinned_title" = "Закрепленные";
+
+"error" = "Ошибка";
+"can't_mark_future_date" = "Нельзя отметить карточку для будущей даты";
+"ok_button" = "Ок";
+
+"character_limit" = "Ограничение 38 символов";
+
+"monday" = "Понедельник";
+"tuesday" = "Вторник";
+"wednesday" = "Среда";
+"thursday" = "Четверг";
+"friday" = "Пятница";
+"saturday" = "Суббота";
+"sunday" = "Воскресенье";
+
+"monday_short" = "Пн";
+"tuesday_short" = "Вт";
+"wednesday_short" = "Ср";
+"thursday_short" = "Чт";
+"friday_short" = "Пт";
+"saturday_short" = "Сб";
+"sunday_short" = "Вс";
+
+"numberOfDays" = "%d day(s)";

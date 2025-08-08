@@ -15,18 +15,18 @@ enum PageModel: CaseIterable {
     var image: UIImage? {
         switch self {
         case .first:
-            return UIImage(named: "bluePage")
+            return UIImage(resource: .bluePage)
         case .second:
-            return UIImage(named: "redPage")
+            return UIImage(resource: .redPage)
         }
     }
     
     var text: String {
         switch self {
         case .first:
-            return "Отслеживайте только\n то, что хотите"
+            return NSLocalizedString("blue_onboarding", comment: "")
         case .second:
-            return "Даже если это\n не литры воды и йога"
+            return NSLocalizedString("red_onboarding", comment: "")
         }
     }
 }

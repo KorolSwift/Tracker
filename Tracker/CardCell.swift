@@ -44,7 +44,9 @@ final class CardCell: UICollectionViewCell {
     private let dayLabel: UILabel = {
         let label = UILabel()
         label.font = .sfProDisplayMedium12
-        label.textColor = .ypBlack
+        label.textColor = UIColor { trait in
+            trait.userInterfaceStyle == .dark ? .ypWhite: .ypBlack
+        }
         return label
     }()
     
@@ -53,7 +55,9 @@ final class CardCell: UICollectionViewCell {
     private lazy var plusButton: UIButton = {
         let button = UIButton(type: .system)
         button.titleLabel?.font = .systemFont(ofSize: 20)
-        button.tintColor = .ypWhite
+        button.tintColor = UIColor { trait in
+            trait.userInterfaceStyle == .dark ? .ypBlack : .ypWhite
+        }
         button.layer.cornerRadius = plusButtonSize / 2
         button.layer.masksToBounds = true
         return button
@@ -61,17 +65,19 @@ final class CardCell: UICollectionViewCell {
     
     private var isCompleted: Bool = false
     private var daysCount: Int = 0
-    var onToggleComplete: ((IndexPath, Bool) -> Void)?
+    var onToggleComplete: ((IndexPath, Bool, Card, Date) -> Void)?
+    private var currentCard: Card?
+    private var currentPickedDay: Date?
     private var trackerId: UUID?
     private var isCompletedToday: Bool = false
     private var daysCountTotal: Int = 0
     var indexPath: IndexPath?
     
     private let pinImageView: UIImageView = {
-        let img = UIImageView(image: UIImage(named: "pin"))
-        img.translatesAutoresizingMaskIntoConstraints = false
-        img.isHidden = true
-        return img
+        let image = UIImageView(image: UIImage(resource: .pin))
+        image.translatesAutoresizingMaskIntoConstraints = false
+        image.isHidden = true
+        return image
     }()
     
     private var isPinned: Bool = false {
@@ -151,12 +157,15 @@ final class CardCell: UICollectionViewCell {
         ])
     }
     
-    func configure(with card: Card, completedRecords: Set<TrackerRecord>, currentDate: Date) {
+    func configure(with card: Card, dayKey: String, completedRecords: Set<TrackerRecord>, currentDate: Date) {
         self.trackerId = card.id
         emojiLabel.text = card.emoji
         descriptionLabel.text = card.description
         colorContainer.backgroundColor = card.color
         plusButton.backgroundColor = card.color
+        
+        self.currentCard = card
+        self.currentPickedDay = currentDate
         
         let allRecordsForCard = completedRecords.filter { $0.trackerId == card.id }
         self.daysCountTotal = allRecordsForCard.count
@@ -164,33 +173,33 @@ final class CardCell: UICollectionViewCell {
         self.isCompletedToday = completedRecords.contains { rec in
             rec.trackerId == card.id && Calendar.current.isDate(rec.date, inSameDayAs: currentDate)
         }
-        let suffix = dayText(for: daysCountTotal)
-        dayLabel.text = "\(daysCountTotal) \(suffix)"
+        dayLabel.text = dayText(for: daysCountTotal)
         updatePlusButtonAppearance()
+        self.isPinned = card.isPinned
     }
     
     private func dayText(for count: Int) -> String {
-        let remainder10 = count % 10
-        let remainder100 = count % 100
-        if remainder10 == 1 && remainder100 != 11 {
-            return "день"
-        } else if (2...4).contains(remainder10) && !(12...14).contains(remainder100) {
-            return "дня"
-        } else {
-            return "дней"
-        }
+        let daysString = String.localizedStringWithFormat(
+            NSLocalizedString("numberOfDays", comment: "Number of remaining days"),
+            count
+        )
+        return daysString
     }
     
     @objc private func didTapPlusButton() {
-        guard let indexPath = self.indexPath else { return }
-        onToggleComplete?(indexPath, !isCompletedToday)
+        guard let indexPath = self.indexPath,
+              let card = self.currentCard,
+              let pickedDay = self.currentPickedDay
+        else { return }
+        
+        onToggleComplete?(indexPath, !isCompletedToday, card, pickedDay)
     }
     
     private func updatePlusButtonAppearance() {
         plusButton.setTitle(nil, for: .normal)
         plusButton.setImage(nil, for: .normal)
         if isCompletedToday {
-            plusButton.setImage(UIImage(named: "done"), for: .normal)
+            plusButton.setImage(UIImage(resource: .done), for: .normal)
             plusButton.backgroundColor = colorContainer.backgroundColor?.withAlphaComponent(0.3)
         } else {
             plusButton.setTitle("+", for: .normal)
