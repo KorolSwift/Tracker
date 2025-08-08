@@ -33,12 +33,12 @@ final class StatisticViewController: UIViewController {
         let errorView = UIView()
         errorView.translatesAutoresizingMaskIntoConstraints = false
         
-        let imageView = UIImageView(image: UIImage(named: "Statistic_error"))
+        let imageView = UIImageView(image: UIImage(resource: .statisticError))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         errorView.addSubview(imageView)
         
         let label = UILabel()
-        label.text = NSLocalizedString("empty_staristics_screen", comment: "")
+        label.text = NSLocalizedString("empty_statistics_screen", comment: "")
         label.textColor = .label
         label.font = .sfProDisplayMedium12
         label.translatesAutoresizingMaskIntoConstraints = false

@@ -11,7 +11,7 @@
 "onboarding_button" = "That's technology!";
 
 "empty_main_screen" = "What are we going to track?";
-"empty_staristics_screen" = "There is nothing to analyze yet";
+"empty_statistics_screen" = "There is nothing to analyze yet";
 "filters" = "Filters";
 "nothing_found" = "Nothing found";
 "empty_category" = "Habits and events can be\ncombined by meaning";

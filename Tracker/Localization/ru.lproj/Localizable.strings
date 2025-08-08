@@ -11,7 +11,7 @@
 "onboarding_button" = "Вот это технологии!";
 
 "empty_main_screen" = "Что будем отслеживать?";
-"empty_staristics_screen" = "Анализировать пока нечего"; 
+"empty_statistics_screen" = "Анализировать пока нечего"; 
 "filters" = "Фильтры";
 "nothing_found" = "Ничего не найдено";
 "empty_category" = "Привычки и события можно\nобъединить по смыслу";

@@ -104,7 +104,7 @@ extension FilterSelectionViewController: UITableViewDataSource, UITableViewDeleg
         cell.accessoryView = nil
         
         if indexPath.section == 1 && filter == selectedFilter {
-            let checkmark = UIImageView(image: UIImage(named: "selected")) 
+            let checkmark = UIImageView(image: UIImage(resource: .selected))
             checkmark.contentMode = .scaleAspectFit
             checkmark.frame = CGRect(x: 0, y: 0, width: 14, height: 14)
             cell.accessoryView = checkmark
@@ -122,6 +122,6 @@ extension FilterSelectionViewController: UITableViewDataSource, UITableViewDeleg
     }
     
     func tableView(_ tview: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return section == 0 ? 0 : 24
+        section == 0 ? 0 : 24
     }
 }

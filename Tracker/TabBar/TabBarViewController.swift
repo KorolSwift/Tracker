@@ -31,7 +31,7 @@ final class TabBarViewController: UITabBarController {
         let trackerNavigation = UINavigationController(rootViewController: trackerViewController)
         trackerNavigation.tabBarItem = UITabBarItem(
             title: NSLocalizedString("trackers_title", comment: ""),
-            image: UIImage(named: "tab_trackers_not_active")?.withRenderingMode(.alwaysOriginal),
+            image: UIImage(resource: .tabTrackersNotActive).withRenderingMode(.alwaysOriginal),
             selectedImage: UIImage(named: "tab_trackers_not_active")
         )
         
@@ -39,7 +39,7 @@ final class TabBarViewController: UITabBarController {
         let staticticNavigation = UINavigationController(rootViewController: staticticViewController)
         staticticNavigation.tabBarItem = UITabBarItem(
             title: NSLocalizedString("statistics_title", comment: ""),
-            image: UIImage(named: "tab_statistic_not_active")?.withRenderingMode(.alwaysOriginal),
+            image: UIImage(resource: .tabStatisticNotActive).withRenderingMode(.alwaysOriginal),
             selectedImage: UIImage(named: "tab_statistic_not_active")
         )
         viewControllers = [trackerNavigation, staticticNavigation]

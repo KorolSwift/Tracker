@@ -146,7 +146,7 @@ final class CategoryViewController: UIViewController {
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
         
-        let imageView = UIImageView(image: UIImage(named: "Error"))
+        let imageView = UIImageView(image: UIImage(resource: .error))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
         let label = UILabel()

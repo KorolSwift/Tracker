@@ -13,9 +13,10 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
     weak var delegate: StoreDelegateProtocol?
     private let context: NSManagedObjectContext
     static let shared = TrackerStore(
-        context: (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    )
-    
+            context: (UIApplication.shared.delegate as? AppDelegate)?
+                .persistentContainer.viewContext
+                ?? NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        )
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData> = {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]

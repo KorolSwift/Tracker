@@ -11,7 +11,7 @@
 "onboarding_button" = "Das ist Technologie!";
 
 "empty_main_screen" = "Was soll erfasst werden?";
-"empty_staristics_screen" = "Es gibt noch nichts zu analysieren"; 
+"empty_statistics_screen" = "Es gibt noch nichts zu analysieren"; 
 "filters" = "Filter";
 "nothing_found" = "Nichts gefunden";
 "empty_category" = "Gewohnheiten und Ereignisse können nach Bedeutung kombiniert werden";

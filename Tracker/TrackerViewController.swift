@@ -181,7 +181,7 @@ final class TrackerViewController: UIViewController {
     }
     
     private func showNavBarButton() {
-        let navBarButtonItem = UIImage(named: "nav_bar_button")
+        let navBarButtonItem = UIImage(resource: .navBarButton)
         let navBarButton = UIBarButtonItem(
             image: navBarButtonItem,
             style: .plain,
@@ -237,7 +237,7 @@ final class TrackerViewController: UIViewController {
     }
     
     private func showError(size: CGSize = CGSize(width: 80, height: 80)) {
-        let imageView = UIImageView(image: UIImage(named: "Error"))
+        let imageView = UIImageView(image: UIImage(resource: .error))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
         
@@ -259,7 +259,7 @@ final class TrackerViewController: UIViewController {
     private func removeError() {
         for subview in view.subviews {
             if let imageView = subview as? UIImageView,
-               imageView.image == UIImage(named: "Error") {
+               imageView.image == UIImage(resource: .error) {
                 imageView.removeFromSuperview()
             }
             if let label = subview as? UILabel,
@@ -557,7 +557,7 @@ final class TrackerViewController: UIViewController {
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
         
-        let imageView = UIImageView(image: UIImage(named: "Filter_error"))
+        let imageView = UIImageView(image: UIImage(resource: .filterError))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(imageView)
         

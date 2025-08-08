@@ -15,9 +15,9 @@ enum PageModel: CaseIterable {
     var image: UIImage? {
         switch self {
         case .first:
-            return UIImage(named: "bluePage")
+            return UIImage(resource: .bluePage)
         case .second:
-            return UIImage(named: "redPage")
+            return UIImage(resource: .redPage)
         }
     }
     

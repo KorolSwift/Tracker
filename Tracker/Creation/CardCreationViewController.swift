@@ -44,7 +44,7 @@ final class CardCreationViewController: UIViewController {
     
     private lazy var clearButton: UIButton = {
         let button = UIButton(type: .system)
-        let image = UIImage(named: "delete_icon")
+        let image = UIImage(resource: .deleteIcon)
         button.setImage(image, for: .normal)
         button.tintColor = .ypGray
         button.imageView?.contentMode = .scaleAspectFit
@@ -109,26 +109,9 @@ final class CardCreationViewController: UIViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
+
     private func shortName(for fullName: String) -> String {
-        switch fullName {
-        case NSLocalizedString("monday", comment: ""):
-            return NSLocalizedString("monday_short", comment: "")
-        case NSLocalizedString("tuesday", comment: ""):
-            return NSLocalizedString("tuesday_short", comment: "")
-        case NSLocalizedString("wednesday", comment: ""):
-            return NSLocalizedString("wednesday_short", comment: "")
-        case NSLocalizedString("thursday", comment: ""):
-            return NSLocalizedString("thursday_short", comment: "")
-        case NSLocalizedString("friday", comment: ""):
-            return NSLocalizedString("friday_short", comment: "")
-        case NSLocalizedString("saturday", comment: ""):
-            return NSLocalizedString("saturday_short", comment: "")
-        case NSLocalizedString("sunday", comment: ""):
-            return NSLocalizedString("sunday_short", comment: "")
-        default:
-            return fullName
-        }
+        Localized.Weekday.shortName(for: fullName)
     }
     
     private var currentSelectedDays: [String] = []
@@ -497,14 +480,6 @@ final class CardCreationViewController: UIViewController {
         }
         
         let scheduleTitle = NSLocalizedString("schedule", comment: "")
-        let body: String
-        
-        if days.count == 7 {
-            body = NSLocalizedString("every_day", comment: "")
-        } else {
-            let shortDays = days.map { shortName(for: $0) }
-            body = shortDays.joined(separator: ", ")
-        }
         
         let full = "\(NSLocalizedString("schedule", comment: ""))\n" +
         (days.count == 7

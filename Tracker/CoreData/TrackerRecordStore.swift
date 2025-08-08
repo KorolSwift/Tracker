@@ -5,7 +5,6 @@
 //  Created by Ди Di on 14/06/25.
 //
 
-import Foundation
 import CoreData
 import UIKit
 
@@ -14,8 +13,10 @@ final class TrackerRecordStore: NSObject, NSFetchedResultsControllerDelegate {
     weak var delegate: StoreDelegateProtocol?
     private let context: NSManagedObjectContext
     static let shared = TrackerRecordStore(
-        context: (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    )
+            context: (UIApplication.shared.delegate as? AppDelegate)?
+                .persistentContainer.viewContext
+                ?? NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        )
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData> = {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]

@@ -74,10 +74,10 @@ final class CardCell: UICollectionViewCell {
     var indexPath: IndexPath?
     
     private let pinImageView: UIImageView = {
-        let img = UIImageView(image: UIImage(named: "pin"))
-        img.translatesAutoresizingMaskIntoConstraints = false
-        img.isHidden = true
-        return img
+        let image = UIImageView(image: UIImage(resource: .pin))
+        image.translatesAutoresizingMaskIntoConstraints = false
+        image.isHidden = true
+        return image
     }()
     
     private var isPinned: Bool = false {
@@ -199,7 +199,7 @@ final class CardCell: UICollectionViewCell {
         plusButton.setTitle(nil, for: .normal)
         plusButton.setImage(nil, for: .normal)
         if isCompletedToday {
-            plusButton.setImage(UIImage(named: "done"), for: .normal)
+            plusButton.setImage(UIImage(resource: .done), for: .normal)
             plusButton.backgroundColor = colorContainer.backgroundColor?.withAlphaComponent(0.3)
         } else {
             plusButton.setTitle("+", for: .normal)
